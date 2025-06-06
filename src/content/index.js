@@ -207,7 +207,7 @@ async function handlePuzzleComplete() {
 function showShareLink(replayId) {
   const extensionId = chrome.runtime.id;
   const extensionUrl = `chrome-extension://${extensionId}/replay.html?id=${replayId}`;
-  const publicUrl = `https://yourusername.github.io/NytCross/public-replay.html?id=${replayId}`;
+  const publicUrl = `https://bowlofbap.github.io/nyt-mini-replay/public-replay.html?id=${replayId}`;
   
   // Copy both URLs to clipboard
   const shareText = `NYT Mini Crossword Replay:
