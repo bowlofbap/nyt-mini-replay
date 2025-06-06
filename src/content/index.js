@@ -247,7 +247,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function handleFirebaseUpload(replayId, recordingData) {
   try {
-    const result = await firebaseRESTManager.uploadRecording(recordingData);
+    const result = await firebaseRESTManager.uploadRecording(recordingData, replayId);
     
     if (window.NYTReplayToast) {
       window.NYTReplayToast.show('Uploaded to cloud!', 'success', 2000);

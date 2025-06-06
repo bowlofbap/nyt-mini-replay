@@ -8,10 +8,8 @@ class FirebaseRESTManager {
     this.baseUrl = `https://firestore.googleapis.com/v1/projects/${this.projectId}/databases/(default)/documents`;
   }
 
-  async uploadRecording(recordingData) {
+  async uploadRecording(recordingData, replayId) {
     try {
-      const replayId = this.generateReplayId();
-      
       const firestoreData = this.convertToFirestoreFormat({
         ...recordingData,
         uploadedAt: new Date().toISOString(),
@@ -129,11 +127,6 @@ class FirebaseRESTManager {
     return result;
   }
 
-  generateReplayId() {
-    const timestamp = Date.now().toString(36);
-    const random = Math.random().toString(36).substr(2, 8);
-    return `${timestamp}-${random}`;
-  }
 }
 
 // Create global instance
