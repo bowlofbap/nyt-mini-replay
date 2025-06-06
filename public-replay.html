@@ -632,13 +632,23 @@
                     break;
                     
                 case 'letter':
+                    // Preserve the cell number span if it exists
+                    const numberSpan = cell.querySelector('.cell-number');
                     cell.textContent = action.letter;
+                    if (numberSpan) {
+                        cell.appendChild(numberSpan);
+                    }
                     cell.classList.add('filled');
                     break;
                     
                 case 'delete':
                 case 'clear':
+                    // Preserve the cell number span if it exists
+                    const numberSpanDel = cell.querySelector('.cell-number');
                     cell.textContent = '';
+                    if (numberSpanDel) {
+                        cell.appendChild(numberSpanDel);
+                    }
                     cell.classList.remove('filled');
                     break;
             }
