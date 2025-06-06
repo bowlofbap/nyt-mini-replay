@@ -209,12 +209,8 @@ function showShareLink(replayId) {
   const extensionUrl = `chrome-extension://${extensionId}/replay.html?id=${replayId}`;
   const publicUrl = `https://bowlofbap.github.io/nyt-mini-replay/public-replay.html?id=${replayId}`;
   
-  // Copy both URLs to clipboard
-  const shareText = `NYT Mini Crossword Replay:
-Extension: ${extensionUrl}
-Public: ${publicUrl}`;
-  
-  navigator.clipboard.writeText(shareText).then(() => {
+  // Copy just the public URL to clipboard (cleaner for sharing)
+  navigator.clipboard.writeText(publicUrl).then(() => {
     if (window.NYTReplayToast) {
       window.NYTReplayToast.showShareLink(publicUrl);
     }
