@@ -101,6 +101,7 @@
             border: 2px solid #333;
             margin: 0 auto;
             background: #333;
+            border-radius: 4px;
         }
 
         .cell {
@@ -115,6 +116,7 @@
             color: #333;
             position: relative;
             transition: all 0.2s ease;
+            box-sizing: border-box;
         }
 
         .cell.black {
@@ -360,8 +362,9 @@
             
             // Mini is always 5x5
             gridEl.style.gridTemplateColumns = `repeat(5, 1fr)`;
-            gridEl.style.width = '250px';
-            gridEl.style.height = '250px';
+            gridEl.style.gridTemplateRows = `repeat(5, 1fr)`;
+            gridEl.style.width = '260px'; // 50px * 5 + 2px gaps * 4 + 4px border
+            gridEl.style.height = '260px';
             
             // Clear existing grid
             gridEl.innerHTML = '';
