@@ -23,6 +23,7 @@ class Recorder {
     this.recording.blackSquares = puzzleInfo.blackSquares;
     this.recording.puzzleTitle = puzzleInfo.title;
     this.recording.puzzleDate = puzzleInfo.date;
+    this.recording.clues = puzzleInfo.clues;
     
     this.attachEventListeners();
     this.isRecording = true;

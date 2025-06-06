@@ -132,6 +132,55 @@
             background: #f5f5f5;
         }
 
+        .puzzle-content {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .clues-container {
+            min-width: 300px;
+            text-align: left;
+        }
+
+        .clues-section {
+            margin-bottom: 20px;
+        }
+
+        .clues-section h3 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .clue-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .clue-list li {
+            padding: 4px 0;
+            font-size: 14px;
+            color: #444;
+            display: flex;
+            gap: 8px;
+        }
+
+        .clue-list li .clue-number {
+            font-weight: bold;
+            min-width: 20px;
+        }
+
+        .clue-list li.highlighted {
+            background: #e3f2fd;
+            margin: 0 -5px;
+            padding-left: 5px;
+        }
+
         .install-prompt {
             background: #fff3cd;
             border: 1px solid #ffeaa7;
@@ -189,7 +238,20 @@
                 <button id="play-pause">Play</button>
             </div>
             
-            <div id="crossword-grid"></div>
+            <div class="puzzle-content">
+                <div id="crossword-grid"></div>
+                
+                <div id="clues-container" class="clues-container">
+                    <div class="clues-section">
+                        <h3>ACROSS</h3>
+                        <ol id="across-clues" class="clue-list"></ol>
+                    </div>
+                    <div class="clues-section">
+                        <h3>DOWN</h3>
+                        <ol id="down-clues" class="clue-list"></ol>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="install-prompt">
@@ -350,6 +412,11 @@
             // Build grid
             buildGrid(data.gridSize, data.blackSquares);
             
+            // Build clues if available
+            if (data.clues) {
+                buildClues(data.clues);
+            }
+            
             // Set up controls
             playPauseBtn.addEventListener('click', togglePlayback);
         }
@@ -416,6 +483,37 @@
             return blackSquares;
         }
 
+        function buildClues(clues) {
+            const acrossContainer = document.getElementById('across-clues');
+            const downContainer = document.getElementById('down-clues');
+            
+            // Clear existing clues
+            acrossContainer.innerHTML = '';
+            downContainer.innerHTML = '';
+            
+            // Build across clues
+            if (clues.across) {
+                clues.across.forEach(clue => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span class="clue-number">${clue.number}</span><span class="clue-text">${clue.text}</span>`;
+                    li.dataset.clueNumber = clue.number;
+                    li.dataset.direction = 'across';
+                    acrossContainer.appendChild(li);
+                });
+            }
+            
+            // Build down clues
+            if (clues.down) {
+                clues.down.forEach(clue => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span class="clue-number">${clue.number}</span><span class="clue-text">${clue.text}</span>`;
+                    li.dataset.clueNumber = clue.number;
+                    li.dataset.direction = 'down';
+                    downContainer.appendChild(li);
+                });
+            }
+        }
+
         function togglePlayback() {
             if (isPlaying) {
                 pausePlayback();
@@ -478,7 +576,7 @@
             if (!isPlaying || currentActionIndex >= replayData.actions.length) {
                 // Playback complete
                 pausePlayback();
-                playPauseBtn.textContent = 'Replay';
+                playPauseBtn.style.display = 'none'; // Hide button when done
                 return;
             }
             

@@ -10,7 +10,8 @@ class PuzzleDetector {
       blackSquares: [],
       clueNumbers: {},
       title: this.getPuzzleTitle(),
-      date: this.getPuzzleDate()
+      date: this.getPuzzleDate(),
+      clues: this.getClues()
     };
     
     // Find all cells in the Mini grid
@@ -145,5 +146,48 @@ class PuzzleDetector {
       row: Math.floor(index / this.gridSize),
       col: index % this.gridSize
     };
+  }
+  
+  getClues() {
+    const clues = {
+      across: [],
+      down: []
+    };
+    
+    // Find all clue list wrappers
+    const clueWrappers = document.querySelectorAll('.xwd__clue-list--wrapper');
+    
+    clueWrappers.forEach(wrapper => {
+      // Find the title to determine if it's Across or Down
+      const titleElement = wrapper.querySelector('.xwd__clue-list--title');
+      if (!titleElement) return;
+      
+      const direction = titleElement.textContent.toLowerCase().trim();
+      if (direction !== 'across' && direction !== 'down') return;
+      
+      // Find all clues in this section
+      const clueElements = wrapper.querySelectorAll('.xwd__clue--li');
+      
+      clueElements.forEach(clueEl => {
+        const labelEl = clueEl.querySelector('.xwd__clue--label');
+        const textEl = clueEl.querySelector('.xwd__clue--text');
+        
+        if (labelEl && textEl) {
+          const number = parseInt(labelEl.textContent.trim());
+          const text = textEl.textContent.trim();
+          
+          clues[direction].push({
+            number: number,
+            text: text
+          });
+        }
+      });
+    });
+    
+    // Sort clues by number
+    clues.across.sort((a, b) => a.number - b.number);
+    clues.down.sort((a, b) => a.number - b.number);
+    
+    return clues;
   }
 }
