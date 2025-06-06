@@ -21,6 +21,9 @@ class PuzzleDetector {
       return null;
     }
     
+    // Get cell numbers
+    puzzleInfo.cellNumbers = this.getCellNumbers(cells);
+    
     return puzzleInfo;
   }
   
@@ -189,5 +192,48 @@ class PuzzleDetector {
     clues.down.sort((a, b) => a.number - b.number);
     
     return clues;
+  }
+  
+  getCellNumbers(cells) {
+    const cellNumbers = [];
+    
+    cells.forEach((cell, index) => {
+      const row = Math.floor(index / 5);
+      const col = index % 5;
+      
+      // Look for number text within the cell
+      let number = null;
+      
+      // For SVG cells, look for text element with cell number
+      const textEl = cell.querySelector('text[data-testid="cell-text"]');
+      if (textEl && textEl.textContent) {
+        const text = textEl.textContent.trim();
+        // Only capture if it's a number (not a letter)
+        if (text && /^\d+$/.test(text)) {
+          number = parseInt(text);
+        }
+      }
+      
+      // Alternative: check for clue number in other formats
+      if (!number) {
+        const labelEl = cell.querySelector('.xwd__clue-label, .Cell-label');
+        if (labelEl && labelEl.textContent) {
+          const text = labelEl.textContent.trim();
+          if (text && /^\d+$/.test(text)) {
+            number = parseInt(text);
+          }
+        }
+      }
+      
+      if (number) {
+        cellNumbers.push({
+          row: row,
+          col: col,
+          number: number
+        });
+      }
+    });
+    
+    return cellNumbers;
   }
 }

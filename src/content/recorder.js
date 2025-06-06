@@ -24,6 +24,7 @@ class Recorder {
     this.recording.puzzleTitle = puzzleInfo.title;
     this.recording.puzzleDate = puzzleInfo.date;
     this.recording.clues = puzzleInfo.clues;
+    this.recording.cellNumbers = puzzleInfo.cellNumbers;
     
     this.attachEventListeners();
     this.isRecording = true;

@@ -118,6 +118,15 @@
             transition: all 0.2s ease;
             box-sizing: border-box;
         }
+        
+        .cell-number {
+            position: absolute;
+            top: 2px;
+            left: 3px;
+            font-size: 10px;
+            font-weight: normal;
+            line-height: 1;
+        }
 
         .cell.black {
             background: #333;
@@ -449,6 +458,17 @@
                     const isBlack = blackSquares && blackSquares.some(([r, c]) => r === row && c === col);
                     if (isBlack) {
                         cell.classList.add('black');
+                    }
+                    
+                    // Add cell number if exists
+                    if (replayData && replayData.cellNumbers) {
+                        const cellNumber = replayData.cellNumbers.find(cn => cn.row === row && cn.col === col);
+                        if (cellNumber) {
+                            const numberSpan = document.createElement('span');
+                            numberSpan.className = 'cell-number';
+                            numberSpan.textContent = cellNumber.number;
+                            cell.appendChild(numberSpan);
+                        }
                     }
                     
                     gridEl.appendChild(cell);

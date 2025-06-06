@@ -54,6 +54,7 @@ h1 {
   cursor: pointer;
   text-transform: uppercase;
   transition: background-color 0.2s ease;
+  position: relative;
 }
 
 .cell.black {
@@ -67,6 +68,15 @@ h1 {
 
 .cell.filled {
   background-color: #f0f0f0;
+}
+
+.cell-number {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  font-size: 10px;
+  font-weight: normal;
+  line-height: 1;
 }
 
 #controls {

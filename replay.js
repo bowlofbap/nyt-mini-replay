@@ -106,6 +106,17 @@ function buildGrid(size, blackSquares) {
         cell.classList.add('black');
       }
       
+      // Add cell number if exists
+      if (replayData && replayData.cellNumbers) {
+        const cellNumber = replayData.cellNumbers.find(cn => cn.row === row && cn.col === col);
+        if (cellNumber) {
+          const numberSpan = document.createElement('span');
+          numberSpan.className = 'cell-number';
+          numberSpan.textContent = cellNumber.number;
+          cell.appendChild(numberSpan);
+        }
+      }
+      
       gridEl.appendChild(cell);
     }
   }
