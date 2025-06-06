@@ -247,6 +247,11 @@
             }
 
             convertFromFirestoreFormat(fields) {
+                if (!fields) {
+                    console.error('❌ convertFromFirestoreFormat: fields is undefined/null');
+                    return {};
+                }
+                
                 const result = {};
                 
                 for (const [key, value] of Object.entries(fields)) {
@@ -258,17 +263,17 @@
                         result[key] = value.booleanValue;
                     } else if (value.nullValue !== undefined) {
                         result[key] = null;
-                    } else if (value.arrayValue) {
+                    } else if (value.arrayValue && value.arrayValue.values) {
                         result[key] = value.arrayValue.values.map(item => {
-                            if (item.arrayValue) {
+                            if (item.arrayValue && item.arrayValue.values) {
                                 return item.arrayValue.values.map(subItem => subItem.doubleValue || subItem.stringValue);
-                            } else if (item.mapValue) {
+                            } else if (item.mapValue && item.mapValue.fields) {
                                 return this.convertFromFirestoreFormat(item.mapValue.fields);
                             } else {
                                 return item.doubleValue || item.stringValue || item.booleanValue;
                             }
                         });
-                    } else if (value.mapValue) {
+                    } else if (value.mapValue && value.mapValue.fields) {
                         result[key] = this.convertFromFirestoreFormat(value.mapValue.fields);
                     }
                 }
