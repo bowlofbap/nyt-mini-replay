@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NYT Mini Crossword Replay</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 16px;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      font-size: 18px;
+      margin: 0 0 16px 0;
+    }
+    .status {
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .status.recording {
+      background-color: #ffe0e0;
+      color: #d00;
+    }
+    .status.idle {
+      background-color: #e0f0ff;
+      color: #0066cc;
+    }
+    .recent-recordings {
+      margin-top: 16px;
+    }
+    .recent-recordings h2 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .recording-item {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .recording-item:hover {
+      background-color: #f0f0f0;
+    }
+    .no-recordings {
+      color: #666;
+      font-style: italic;
+    }
+    #controls {
+      margin: 12px 0;
+      text-align: center;
+    }
+    .control-btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+    }
+    .control-btn.start {
+      background-color: #28a745;
+      color: white;
+    }
+    .control-btn.start:hover {
+      background-color: #218838;
+    }
+    .control-btn.stop {
+      background-color: #dc3545;
+      color: white;
+    }
+    .control-btn.stop:hover {
+      background-color: #c82333;
+    }
+    .control-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <h1>NYT Mini Crossword Replay</h1>
+  
+  <div id="status" class="status idle">
+    Not recording
+  </div>
+  
+  <div id="manual-controls" style="display: none;">
+    <button id="stop-recording-btn" class="control-btn stop">Stop Recording</button>
+  </div>
+  
+  <div class="recent-recordings">
+    <h2>Recent Recordings</h2>
+    <div id="recordings-list">
+      <div class="no-recordings">No recordings yet</div>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

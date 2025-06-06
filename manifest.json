@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "NYT Mini Crossword Replay",
+  "version": "1.0",
+  "description": "Record and replay your NYT Mini crossword solves",
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://www.nytimes.com/crosswords/game/mini*",
+    "https://firestore.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.nytimes.com/crosswords/game/mini*"],
+      "js": [
+        "src/shared/constants.js",
+        "src/shared/types.js",
+        "src/shared/firebase-v9.js",
+        "src/content/toast.js",
+        "src/content/recorder.js",
+        "src/content/puzzle-detector.js",
+        "src/content/index.js"
+      ]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["replay.html", "replay.js", "style.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

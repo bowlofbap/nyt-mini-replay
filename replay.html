@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NYT Crossword Replay</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="container">
+    <h1>NYT Crossword Replay</h1>
+    
+    <div id="loading">Loading replay...</div>
+    
+    <div id="replay-container" style="display: none;">
+      <div id="timer">00:00</div>
+      
+      <div id="grid-container">
+        <div id="crossword-grid"></div>
+      </div>
+      
+      <div id="controls">
+        <button id="play-pause">Play</button>
+      </div>
+    </div>
+    
+    <div id="error" style="display: none;">
+      <p>Error loading replay. Make sure the link is correct.</p>
+    </div>
+  </div>
+  
+  <script src="src/shared/constants.js"></script>
+  <script src="src/shared/firebase-v9.js"></script>
+  <script src="replay.js"></script>
+</body>
+</html>
