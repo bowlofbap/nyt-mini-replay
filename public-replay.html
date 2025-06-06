@@ -219,18 +219,29 @@
 
             async downloadRecording(replayId) {
                 try {
+                    console.log('🚀 Making fetch request to:', `${this.baseUrl}/recordings/${replayId}?key=${this.apiKey}`);
                     const response = await fetch(`${this.baseUrl}/recordings/${replayId}?key=${this.apiKey}`);
+                    console.log('📡 Response status:', response.status, response.statusText);
+                    console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
 
                     if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('❌ Response error body:', errorText);
                         if (response.status === 404) {
                             throw new Error('Recording not found');
                         }
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
                     }
 
-                    const data = await response.json();
-                    return this.convertFromFirestoreFormat(data.fields);
+                    const rawData = await response.json();
+                    console.log('📊 Raw Firebase response:', rawData);
+                    
+                    const convertedData = this.convertFromFirestoreFormat(rawData.fields);
+                    console.log('🔄 Converted data:', convertedData);
+                    
+                    return convertedData;
                 } catch (error) {
+                    console.error('💥 downloadRecording error:', error);
                     throw error;
                 }
             }
@@ -298,14 +309,23 @@
 
         async function loadReplay() {
             try {
+                console.log('🔍 Starting to load replay with ID:', replayId);
+                console.log('🔧 Firebase config:', FIREBASE_CONFIG);
+                console.log('🌐 API URL:', `${firebaseManager.baseUrl}/recordings/${replayId}?key=${firebaseManager.apiKey}`);
+                
                 const recording = await firebaseManager.downloadRecording(replayId);
+                console.log('📦 Raw recording data received:', recording);
                 
                 if (recording) {
+                    console.log('✅ Recording loaded successfully, starting replay');
                     startReplay(recording);
                 } else {
+                    console.error('❌ No recording data received');
                     showError();
                 }
             } catch (error) {
+                console.error('💥 Error loading replay:', error);
+                console.error('💥 Error details:', error.message, error.stack);
                 showError();
             }
         }
