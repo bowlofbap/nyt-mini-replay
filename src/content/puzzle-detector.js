@@ -14,7 +14,7 @@ class PuzzleDetector {
     
     // Determine grid size from cell count
     this.gridSize = Math.sqrt(cells.length);
-    console.log(`Detected grid size: ${this.gridSize}x${this.gridSize}`);
+    console.log(`Detected grid size: ${this.gridSize}x${this.gridSize} (${cells.length} total cells)`);
     
     const puzzleInfo = {
       gridSize: this.gridSize,

@@ -17,9 +17,13 @@ class Recorder {
     
     const puzzleInfo = this.puzzleDetector.detectPuzzleStructure();
     if (!puzzleInfo) {
+      console.error('[NYT Replay] Could not detect puzzle structure');
       return false;
     }
     
+    console.log('[NYT Replay] Recording with grid size:', puzzleInfo.gridSize);
+    
+    this.recording.gridSize = puzzleInfo.gridSize;
     this.recording.blackSquares = puzzleInfo.blackSquares;
     this.recording.puzzleTitle = puzzleInfo.title;
     this.recording.puzzleDate = puzzleInfo.date;

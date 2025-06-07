@@ -20,7 +20,7 @@ const RecordingStates = {
 // Recording data structure
 class Recording {
   constructor() {
-    this.gridSize = CONSTANTS.MINI_GRID_SIZE;
+    this.gridSize = null; // Will be set dynamically
     this.blackSquares = [];
     this.actions = [];
     this.startTime = null;
