@@ -175,7 +175,7 @@ function startPlayback() {
   
   if (startTime === null) {
     startTime = performance.now();
-    currentTimerValue = 0;
+    pausedTime = 0;
   } else {
     startTime = performance.now() - (pausedTime / playbackSpeed);
   }
@@ -190,18 +190,14 @@ function startPlayback() {
 }
 
 function startContinuousTimer() {
-  lastTimerUpdate = performance.now();
-  
   // Update timer every 100ms for smooth display
   timerInterval = setInterval(() => {
     if (isPlaying) {
-      const now = performance.now();
-      const realTimeDelta = now - lastTimerUpdate; // How much real time passed (100ms)
-      const scaledTimeDelta = realTimeDelta * playbackSpeed; // How much solve time should advance
+      // Calculate current position in recording timeline
+      const realElapsed = performance.now() - startTime;
+      const recordingTimePosition = pausedTime + (realElapsed * playbackSpeed);
       
-      currentTimerValue += scaledTimeDelta;
-      updateTimer(currentTimerValue);
-      lastTimerUpdate = now;
+      updateTimer(recordingTimePosition);
     }
   }, CONSTANTS.TIMING.TIMER_UPDATE_INTERVAL);
 }
@@ -210,9 +206,10 @@ function pausePlayback() {
   isPlaying = false;
   playPauseBtn.textContent = 'Play';
   
-  // Save current timer value when pausing (already stored in currentTimerValue)
+  // Save current position in recording timeline when pausing
   if (startTime !== null) {
-    pausedTime = currentTimerValue;
+    const realElapsed = performance.now() - startTime;
+    pausedTime = pausedTime + (realElapsed * playbackSpeed);
   }
   
   if (playbackTimer) {
