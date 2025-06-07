@@ -112,7 +112,7 @@ class Recorder {
       this.changeCheckTimeout = setTimeout(() => {
         this.checkForCellChanges();
         this.checkForSelectionChanges();
-      }, 100); // Check after 100ms of no changes
+      }, CONSTANTS.TIMING.DEBOUNCE_TIMEOUT); // Check after debounce timeout
     });
     
     // Observe the entire crossword container for changes

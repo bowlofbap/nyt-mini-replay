@@ -86,14 +86,15 @@ function buildGrid(size, blackSquares) {
   }
   
   // Use the size from recording data, default to 5 if not specified
-  const gridSize = size || 5;
-  const cellSize = 50; // pixels per cell
-  const gap = 1; // gap between cells
-  const totalSize = (cellSize * gridSize) + (gap * (gridSize - 1));
+  const gridSize = size || CONSTANTS.GRID.DEFAULT_SIZE;
+  
+  // Calculate responsive cell size and grid dimensions
+  const dimensions = GridUtils.calculateGridDimensions(gridSize);
   
   gridEl.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
-  gridEl.style.width = `${totalSize}px`;
-  gridEl.style.height = `${totalSize}px`;
+  gridEl.style.width = `${dimensions.totalWidth}px`;
+  gridEl.style.height = `${dimensions.totalHeight}px`;
+  gridEl.style.gap = `${CONSTANTS.LAYOUT.GRID_GAP}px`;
   
   // Clear existing grid
   gridEl.innerHTML = '';
@@ -132,7 +133,7 @@ function buildGrid(size, blackSquares) {
 function inferBlackSquares() {
   if (!replayData || !replayData.actions) return [];
   
-  const gridSize = replayData.gridSize || 5;
+  const gridSize = replayData.gridSize || CONSTANTS.GRID.DEFAULT_SIZE;
   
   // Track which cells ever received letters
   const cellsWithLetters = new Set();
@@ -193,7 +194,7 @@ function startContinuousTimer() {
       const currentTime = performance.now() - startTime;
       updateTimer(currentTime);
     }
-  }, 100);
+  }, CONSTANTS.TIMING.TIMER_UPDATE_INTERVAL);
 }
 
 function pausePlayback() {
@@ -334,12 +335,12 @@ function showCompletionMessage() {
   
   document.body.appendChild(completion);
   
-  // Remove after 3 seconds
+  // Remove after configured duration
   setTimeout(() => {
     if (completion.parentNode) {
       completion.parentNode.removeChild(completion);
     }
-  }, 3000);
+  }, CONSTANTS.TIMING.COMPLETION_MESSAGE_DURATION);
 }
 
 function setupSpeedControls() {

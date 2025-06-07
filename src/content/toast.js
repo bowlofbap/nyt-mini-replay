@@ -17,15 +17,15 @@ class Toast {
     this.container.id = 'nyt-replay-toast-container';
     this.container.style.cssText = `
       position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 10000;
+      top: ${CONSTANTS.LAYOUT.SPACING.LG}px;
+      right: ${CONSTANTS.LAYOUT.SPACING.LG}px;
+      z-index: ${CONSTANTS.Z_INDEX.TOAST};
       pointer-events: none;
     `;
     document.body.appendChild(this.container);
   }
   
-  show(message, type = 'info', duration = 3000) {
+  show(message, type = 'info', duration = CONSTANTS.TIMING.TOAST_DURATION) {
     const toast = document.createElement('div');
     toast.className = 'nyt-replay-toast';
     
@@ -42,12 +42,12 @@ class Toast {
     toast.style.cssText = `
       background-color: ${bgColor};
       color: white;
-      padding: 12px 20px;
-      border-radius: 4px;
-      margin-bottom: 10px;
+      padding: ${CONSTANTS.LAYOUT.SPACING.SM}px ${CONSTANTS.LAYOUT.SPACING.LG}px;
+      border-radius: ${CONSTANTS.LAYOUT.BORDER_RADIUS.SMALL}px;
+      margin-bottom: ${CONSTANTS.LAYOUT.SPACING.SM}px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       font-family: Arial, sans-serif;
-      font-size: 14px;
+      font-size: ${CONSTANTS.TYPOGRAPHY.FONT_SIZES.MD}px;
       font-weight: 500;
       opacity: 0;
       transform: translateX(100%);
@@ -98,7 +98,7 @@ class Toast {
   }
   
   showRecordingStarted() {
-    return this.show('Recording started', 'recording', 3000);
+    return this.show('Recording started', 'recording', CONSTANTS.TIMING.TOAST_DURATION);
   }
   
   showRecordingStopped(duration) {
@@ -107,17 +107,17 @@ class Toast {
     const secs = seconds % 60;
     const timeStr = `${minutes}:${secs.toString().padStart(2, '0')}`;
     
-    return this.show(`Recording stopped (${timeStr})`, 'success', 4000);
+    return this.show(`Recording stopped (${timeStr})`, 'success', CONSTANTS.TIMING.TOAST_LONG_DURATION);
   }
   
   showShareLink(url) {
-    const toast = this.show('📋 Replay link copied to clipboard!', 'success', 5000);
+    const toast = this.show('📋 Replay link copied to clipboard!', 'success', CONSTANTS.TIMING.TOAST_LONG_DURATION);
     
     // Make it clickable
     toast.style.cursor = 'pointer';
     toast.addEventListener('click', () => {
       navigator.clipboard.writeText(url);
-      this.show('Link copied again!', 'info', 2000);
+      this.show('Link copied again!', 'info', CONSTANTS.TIMING.TOAST_DURATION);
     });
     
     return toast;

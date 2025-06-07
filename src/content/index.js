@@ -46,7 +46,7 @@ function waitForPuzzle() {
       observer.disconnect();
       startRecordingSession();
     }
-  }, 1000);
+  }, CONSTANTS.TIMING.RECORDING_CHECK_INTERVAL);
 }
 
 function detectTimerStart() {
@@ -158,7 +158,13 @@ function isPuzzleCompleted() {
   
   // Method 5: Check if all cells are filled and no errors
   const cells = puzzleDetector.findGridCells();
-  if (cells && cells.length === 25) {
+  if (cells && cells.length > 0) {
+    const expectedCellCount = puzzleDetector.gridSize * puzzleDetector.gridSize;
+    if (cells.length !== expectedCellCount) {
+      console.log(`Cell count mismatch: found ${cells.length}, expected ${expectedCellCount}`);
+      return false;
+    }
+    
     let filledCount = 0;
     cells.forEach(cell => {
       const text = cell.textContent || cell.innerText;
@@ -167,9 +173,9 @@ function isPuzzleCompleted() {
       }
     });
     
-    // If all 25 cells are filled without errors, likely completed
-    if (filledCount === 25) {
-      console.log('All cells filled correctly - puzzle likely complete');
+    // If all cells are filled without errors, likely completed
+    if (filledCount === expectedCellCount) {
+      console.log(`All ${filledCount} cells filled correctly - puzzle likely complete`);
       return true;
     }
   }
@@ -183,7 +189,7 @@ function monitorPuzzleCompletion() {
       if (isPuzzleCompleted()) {
         setTimeout(() => {
           handlePuzzleComplete();
-        }, 200);
+        }, CONSTANTS.TIMING.COMPLETION_CHECK_DELAY);
         observer.disconnect();
       }
     } catch (error) {
@@ -207,10 +213,10 @@ function monitorPuzzleCompletion() {
         handlePuzzleComplete();
         observer.disconnect();
       }
-    }, 2000);
+    }, CONSTANTS.TIMING.BACKUP_CHECK_INTERVAL);
     
-    // Stop backup check after 10 minutes
-    setTimeout(() => clearInterval(backupCheck), 600000);
+    // Stop backup check after configured timeout
+    setTimeout(() => clearInterval(backupCheck), CONSTANTS.TIMING.BACKUP_CHECK_TIMEOUT);
   } catch (error) {
     console.error('Error setting up completion monitoring:', error);
   }

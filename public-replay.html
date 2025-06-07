@@ -485,9 +485,25 @@
             
             // Use the size from recording data, default to 5 if not specified
             const gridSize = size || 5;
-            const cellSize = 50; // pixels per cell
-            const gap = 2; // gap between cells
-            const border = 4; // border around grid
+            
+            // Calculate responsive cell size based on grid dimensions
+            let cellSize = 50; // default for 5x5
+            if (gridSize <= 5) {
+                cellSize = 50;
+            } else if (gridSize <= 11) {
+                cellSize = 35;
+            } else if (gridSize <= 21) {
+                cellSize = 25;
+            }
+            
+            // Adjust for available container width (max 500px container - 60px padding)
+            const maxContainerWidth = 440;
+            const gap = 2;
+            const border = 4;
+            const availableWidth = maxContainerWidth - border;
+            const maxCellSize = Math.floor((availableWidth - (gap * (gridSize - 1))) / gridSize);
+            cellSize = Math.min(cellSize, maxCellSize);
+            
             const totalSize = (cellSize * gridSize) + (gap * (gridSize - 1)) + border;
             
             gridEl.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
@@ -506,6 +522,9 @@
                     cell.dataset.row = row;
                     cell.dataset.col = col;
                     cell.id = `cell-${row}-${col}`;
+                    cell.style.width = `${cellSize}px`;
+                    cell.style.height = `${cellSize}px`;
+                    cell.style.fontSize = `${Math.max(10, Math.floor(cellSize * 0.4))}px`;
                     
                     // Check if black square
                     const isBlack = blackSquares && blackSquares.some(([r, c]) => r === row && c === col);

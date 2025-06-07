@@ -32,7 +32,7 @@ class PuzzleDetector {
   }
   
   findGridCells() {
-    // NYT Mini uses specific class names for cells
+    // NYT uses specific class names for cells
     // These selectors may need adjustment based on NYT's current HTML
     const selectors = [
       '.xwd__cell',  // Common NYT crossword cell class
@@ -49,32 +49,64 @@ class PuzzleDetector {
       '.crossword-cell'  // Generic crossword
     ];
     
+    let bestMatch = null;
+    let bestScore = 0;
     
     for (const selector of selectors) {
       const cells = document.querySelectorAll(selector);
       
-      // Support both 5x5 (Mini) and 7x7 puzzles
-      if (cells.length === 25 || cells.length === 49) {  // 5x5 or 7x7 grid
-        console.log(`Found ${cells.length} cells (${Math.sqrt(cells.length)}x${Math.sqrt(cells.length)} grid) with selector: ${selector}`);
-        return Array.from(cells);
-      }
-    }
-    
-    // If we can't find exactly 25 or 49, let's see what we can find
-    for (const selector of selectors) {
-      const cells = document.querySelectorAll(selector);
       if (cells.length > 0) {
-        console.log(`[NYT Replay] Found ${cells.length} cells with selector: ${selector}`);
+        const cellCount = cells.length;
+        const possibleGridSize = Math.sqrt(cellCount);
+        
+        // Check if it's a perfect square (valid grid)
+        if (Number.isInteger(possibleGridSize)) {
+          // Validate grid size is within reasonable bounds
+          if (possibleGridSize >= CONSTANTS.GRID.MIN_SIZE && possibleGridSize <= CONSTANTS.GRID.MAX_SIZE) {
+            console.log(`Found ${cellCount} cells (${possibleGridSize}x${possibleGridSize} grid) with selector: ${selector}`);
+            
+            // Score based on how well it matches expected patterns
+            let score = cellCount;
+            
+            // Prefer common sizes (Mini = 5x5, Daily = 15x15)
+            if (possibleGridSize === 5 || possibleGridSize === 15) {
+              score += 1000;
+            }
+            
+            // Prefer NYT-specific selectors
+            if (selector.includes('xwd') || selector.includes('testid')) {
+              score += 500;
+            }
+            
+            if (score > bestScore) {
+              bestScore = score;
+              bestMatch = {
+                cells: Array.from(cells),
+                gridSize: possibleGridSize,
+                selector: selector
+              };
+            }
+          }
+        } else {
+          console.log(`[NYT Replay] Found ${cellCount} cells with selector: ${selector} (not a perfect square grid)`);
+        }
       }
     }
     
-    // Try to find any element that might be a crossword container
+    if (bestMatch) {
+      console.log(`[NYT Replay] Selected best match: ${bestMatch.gridSize}x${bestMatch.gridSize} grid with selector: ${bestMatch.selector}`);
+      this.gridSize = bestMatch.gridSize;
+      return bestMatch.cells;
+    }
+    
+    // Try to find any element that might be a crossword container for debugging
     const containerSelectors = ['.crossword', '.puzzle', '.mini', '.xwd', '.pz-moment', '.game-board'];
     containerSelectors.forEach(selector => {
       const container = document.querySelector(selector);
       if (container) {
-  
-  
+        console.log(`[NYT Replay] Found potential container: ${selector}`);
+        const cells = container.querySelectorAll('*');
+        console.log(`[NYT Replay] Container has ${cells.length} child elements`);
       }
     });
     

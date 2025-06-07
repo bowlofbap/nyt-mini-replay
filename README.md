@@ -1,38 +1,82 @@
-# NYT Mini Crossword Replay Chrome Extension
+# NYT Crossword Replay
 
-Record and share replays of your NYT Mini Crossword solving sessions.
+A Chrome extension that records your New York Times crossword solving sessions and creates shareable replays for friends to watch your solving strategy.
 
-## 🎯 What This Does
+## Overview
 
-- Records every letter you type while solving the NYT Mini Crossword
-- Captures accurate timing of your solve
-- Uploads recordings to the cloud for sharing
-- Generates shareable links that anyone can view
-- Works automatically when you start solving a puzzle
+NYT Crossword Replay automatically captures every keystroke, cell selection, and solving pattern as you complete crosswords on nytimes.com. When you finish, it generates a shareable link that lets others watch your solve in real-time with accurate timing and visual feedback.
 
-## 🚀 Installation
+## Features
 
+### Recording Capabilities
+- **Universal Crossword Support**: Works with Mini crosswords (5x5), daily puzzles (15x15), and any grid size
+- **Complete Input Tracking**: Records letters typed, deletions, and corrections
+- **Visual State Capture**: Tracks cell selections (yellow highlights) and word highlighting (blue highlights)
+- **Precise Timing**: Captures exact timestamps for accurate replay speed
+- **Automatic Detection**: Starts recording when you begin solving, stops when completed
+
+### Replay Viewing
+- **Real-time Playback**: Watch solves unfold with original timing
+- **Speed Controls**: View at 1x, 2x, or 4x speed
+- **Visual Accuracy**: Shows cell selections and word highlights as they occurred
+- **Responsive Design**: Adapts to different crossword sizes automatically
+- **Share Anywhere**: Replay links work for anyone, no extension required
+
+### Technical Features
+- **Firebase Integration**: Secure cloud storage for replay data
+- **Professional Architecture**: Modular design with separation of concerns
+- **Error Handling**: Robust error recovery and user feedback
+- **Performance Optimized**: Minimal impact on solving experience
+
+## Installation
+
+### From Source
 1. Download or clone this repository
-2. Open Chrome and go to `chrome://extensions/`
-3. Enable "Developer mode" 
-4. Click "Load unpacked" and select the project folder
-5. Navigate to [NYT Mini Crossword](https://www.nytimes.com/crosswords/game/mini) and start solving!
+2. Open Chrome and navigate to `chrome://extensions/`
+3. Enable "Developer mode" in the top right
+4. Click "Load unpacked" and select the extension folder
+5. The extension icon will appear in your Chrome toolbar
 
-## 📱 How to Use
+### Usage
+1. Navigate to any NYT crossword at `nytimes.com/crosswords/game/`
+2. Start solving normally - recording begins automatically
+3. Complete the puzzle as usual
+4. When finished, a toast notification will show your replay link
+5. Copy and share the link with friends
 
-1. **Start Solving**: Just click the play button on NYT Mini - recording starts automatically
-2. **Solve the Puzzle**: Type letters as normal - everything is recorded
-3. **Get Share Link**: When you complete the puzzle, a shareable link is automatically copied to your clipboard
-4. **Share with Friends**: Send the link to anyone - they can watch your solve replay
+## How It Works
 
-## 🔗 Sharing Options
+### Recording Process
+The extension monitors the crossword page for:
+- Timer activation indicating puzzle start
+- Cell clicks and arrow key navigation
+- Letter input and deletions
+- Selection state changes (yellow/blue highlighting)
+- Puzzle completion events
 
-When you complete a puzzle, you'll get two shareable links:
+### Data Storage
+Recordings are stored securely in Firebase with:
+- Grid size and structure information
+- Complete action history with timestamps
+- Cell numbering and clue data
+- Shareable unique identifiers
 
-- **Extension Link**: `chrome-extension://...` - For friends who have the extension installed
-- **Public Link**: `https://yourusername.github.io/NytCross/public-replay.html?id=...` - Anyone can view this
+### Replay Generation
+Public replay links display:
+- Responsive crossword grid
+- Action-by-action playback
+- Original timing preservation
+- Speed control options
+- Professional interface
 
-## 🏗 Technical Details
+## Supported Crosswords
+
+- **NYT Mini**: 5x5 weekday puzzles
+- **NYT Daily**: 15x15 standard crosswords
+- **Custom Sizes**: Any square grid from 3x3 to 21x21
+- **All Variants**: Weekend puzzles, themed puzzles, special editions
+
+## Technical Details
 
 ### Architecture
 - **Manifest V3** Chrome Extension
@@ -91,62 +135,76 @@ nyt-crossword-replay/
 3. Solve a puzzle and verify recording works
 4. Test replay links work correctly
 
-## 📊 Data Format
+### Configuration
+All timing, sizing, and behavior constants are centralized in `src/shared/constants.js` for easy customization and maintenance.
 
-Recordings are stored as JSON with this structure:
+### Building
+No build process required - the extension runs directly from source files.
 
-```javascript
-{
-  gridSize: 5,                    // Always 5x5 for Mini
-  blackSquares: [[0,3], [0,4]],  // Black square positions
-  actions: [
-    {ms: 0,    type: "letter", row: 0, col: 0, letter: "A"},
-    {ms: 1000, type: "letter", row: 0, col: 1, letter: "B"},
-    {ms: 2000, type: "delete", row: 0, col: 1},
-    {ms: 15000, type: "complete", message: "Puzzle completed!"}
-  ],
-  totalTime: 15000,              // Total solve time in ms
-  puzzleDate: "2024-01-15",      // Puzzle date
-  uploadedAt: "2024-01-15T10:30:00Z"
-}
-```
+## Privacy and Security
 
-## 🔒 Privacy
+- **No Personal Data**: Only puzzle-solving actions are recorded
+- **Secure Storage**: All data encrypted in transit and at rest
+- **Anonymous Sharing**: Replay links contain no personal information
+- **Local Processing**: Sensitive operations happen in your browser
 
-- Only puzzle solving data is recorded (letters, timing, completion)
-- No personal information is collected
-- Recordings are stored with random IDs
-- Anyone with a replay link can view that specific recording
+## Technical Requirements
 
-## 🐛 Troubleshooting
+- **Browser**: Chrome 88+ (Manifest V3 compatible)
+- **Website**: nytimes.com crossword pages
+- **Internet**: Required for saving and sharing replays
+- **Permissions**: Limited to nytimes.com and Firebase storage
 
-### Recording Not Starting
-- Make sure you're on the NYT Mini page (`/crosswords/game/mini`)
-- Check that the extension is enabled
-- Try refreshing the page
+## Troubleshooting
 
-### Share Links Not Working
-- Verify Firebase configuration is correct
-- Check browser console for error messages
-- Ensure you have internet connection for cloud upload
+### Recording Issues
+- Ensure you're on a supported NYT crossword page
+- Check that the extension is enabled in Chrome
+- Reload the page if recording doesn't start automatically
 
-### GitHub Pages Not Deploying
-- Verify repository has GitHub Pages enabled
-- Check Actions tab for deployment status
-- Ensure workflow file is in `.github/workflows/`
+### Replay Problems
+- Verify the replay link is complete and accurate
+- Check your internet connection
+- Try opening the link in a new browser tab
 
-## 🤝 Contributing
+### Performance Concerns
+- The extension uses minimal resources during solving
+- Recording data is compressed for efficient storage
+- No impact on crossword solving speed or accuracy
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+## Development
 
-## 📄 License
+### Setup Firebase
+1. Create a Firebase project at https://console.firebase.google.com
+2. Enable Firestore Database
+3. Update Firebase config in `src/shared/constants.js`
+4. Update config in `public-replay.html`
 
-MIT License - feel free to use and modify as needed.
+### Setup GitHub Pages
+1. Push code to GitHub repository
+2. Go to repository Settings → Pages
+3. Set source to "GitHub Actions"
+4. The deployment workflow will automatically deploy on push to main
 
-## 🎉 Credits
+### Testing
+1. Load the extension in Chrome developer mode
+2. Go to NYT crossword page
+3. Solve a puzzle and verify recording works
+4. Test replay links work correctly
 
-Built for NYT Mini Crossword enthusiasts who want to share their solving strategies with friends!
+## Version History
+
+**v1.0.3** - Current Release
+- Universal crossword size support
+- Responsive cell sizing
+- Enhanced selection tracking
+- Improved error handling
+- Centralized configuration system
+
+## Support
+
+For issues, feature requests, or technical questions, please visit the project repository or contact the development team.
+
+## License
+
+This extension is provided as-is for personal use with New York Times crosswords. Please respect NYT's terms of service when using this tool.
