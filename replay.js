@@ -12,6 +12,8 @@ let timerInterval = null;
 let startTime = null;
 let pausedTime = 0;
 let playbackSpeed = 1;
+let currentTimerValue = 0; // Current timer value in ms
+let lastTimerUpdate = null; // When we last updated the timer
 
 // Elements
 const loadingEl = document.getElementById('loading');
@@ -173,9 +175,9 @@ function startPlayback() {
   
   if (startTime === null) {
     startTime = performance.now();
-    pausedTime = 0;
+    currentTimerValue = 0;
   } else {
-    startTime = performance.now() - pausedTime;
+    startTime = performance.now() - (pausedTime / playbackSpeed);
   }
   
   if (!replayData || !replayData.actions || replayData.actions.length === 0) {
@@ -188,13 +190,18 @@ function startPlayback() {
 }
 
 function startContinuousTimer() {
+  lastTimerUpdate = performance.now();
+  
   // Update timer every 100ms for smooth display
   timerInterval = setInterval(() => {
     if (isPlaying) {
-      const realElapsedTime = performance.now() - startTime;
-      const scaledElapsedTime = realElapsedTime * playbackSpeed;
-      const currentReplayTime = pausedTime + scaledElapsedTime;
-      updateTimer(currentReplayTime);
+      const now = performance.now();
+      const realTimeDelta = now - lastTimerUpdate; // How much real time passed (100ms)
+      const scaledTimeDelta = realTimeDelta * playbackSpeed; // How much solve time should advance
+      
+      currentTimerValue += scaledTimeDelta;
+      updateTimer(currentTimerValue);
+      lastTimerUpdate = now;
     }
   }, CONSTANTS.TIMING.TIMER_UPDATE_INTERVAL);
 }
@@ -203,9 +210,9 @@ function pausePlayback() {
   isPlaying = false;
   playPauseBtn.textContent = 'Play';
   
-  // Save current elapsed time when pausing
+  // Save current timer value when pausing (already stored in currentTimerValue)
   if (startTime !== null) {
-    pausedTime = performance.now() - startTime;
+    pausedTime = currentTimerValue;
   }
   
   if (playbackTimer) {
@@ -355,6 +362,10 @@ function setupSpeedControls() {
       btn.classList.add('active');
       // Set new speed
       playbackSpeed = parseFloat(btn.dataset.speed);
+      // Reset timer update tracking for smooth speed transitions
+      if (isPlaying && lastTimerUpdate !== null) {
+        lastTimerUpdate = performance.now();
+      }
     });
   });
 }
