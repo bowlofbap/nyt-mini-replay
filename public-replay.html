@@ -140,6 +140,14 @@
         .cell.filled {
             background: #f5f5f5;
         }
+        
+        .cell.nyt-selected {
+            background: #ffeb3b !important;
+        }
+        
+        .cell.nyt-highlighted {
+            background: #bbdefb !important;
+        }
 
         .puzzle-content {
             display: flex;
@@ -627,6 +635,25 @@
                 return;
             }
             
+            // Handle word highlighting action (affects multiple cells)
+            if (action.type === 'word_highlighted') {
+                console.log('🔥 Executing word_highlighted action:', action);
+                // Clear all current highlights
+                gridEl.querySelectorAll('.nyt-highlighted').forEach(el => el.classList.remove('nyt-highlighted'));
+                
+                if (action.action === 'highlight' && action.cells) {
+                    // Highlight the specified cells
+                    action.cells.forEach(cellPos => {
+                        const cell = document.getElementById(`cell-${cellPos.row}-${cellPos.col}`);
+                        if (cell && !cell.classList.contains('black')) {
+                            console.log('🔥 Adding nyt-highlighted to cell:', cellPos.row, cellPos.col);
+                            cell.classList.add('nyt-highlighted');
+                        }
+                    });
+                }
+                return;
+            }
+            
             const cell = document.getElementById(`cell-${action.row}-${action.col}`);
             
             if (!cell || cell.classList.contains('black')) {
@@ -637,6 +664,19 @@
                 case 'select':
                     gridEl.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
                     cell.classList.add('selected');
+                    break;
+                    
+                case 'cell_selected':
+                    console.log('🔥 Executing cell_selected action:', action);
+                    if (action.action === 'select') {
+                        // Clear any previously selected cell
+                        gridEl.querySelectorAll('.nyt-selected').forEach(el => el.classList.remove('nyt-selected'));
+                        console.log('🔥 Adding nyt-selected to cell:', action.row, action.col);
+                        cell.classList.add('nyt-selected');
+                    } else if (action.action === 'deselect') {
+                        console.log('🔥 Removing nyt-selected from cell:', action.row, action.col);
+                        cell.classList.remove('nyt-selected');
+                    }
                     break;
                     
                 case 'letter':

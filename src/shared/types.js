@@ -6,7 +6,9 @@ const ActionTypes = {
   LETTER: 'letter',
   DELETE: 'delete',
   CLEAR: 'clear',
-  COMPLETE: 'complete'
+  COMPLETE: 'complete',
+  CELL_SELECTED: 'cell_selected',
+  WORD_HIGHLIGHTED: 'word_highlighted'
 };
 
 const RecordingStates = {

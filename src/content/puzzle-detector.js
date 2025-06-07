@@ -55,7 +55,7 @@ class PuzzleDetector {
       
       // Support both 5x5 (Mini) and 7x7 puzzles
       if (cells.length === 25 || cells.length === 49) {  // 5x5 or 7x7 grid
-        console.log(`Found ${cells.length} cells (${Math.sqrt(cells.length)}x${Math.sqrt(cells.length)} grid)`);
+        console.log(`Found ${cells.length} cells (${Math.sqrt(cells.length)}x${Math.sqrt(cells.length)} grid) with selector: ${selector}`);
         return Array.from(cells);
       }
     }

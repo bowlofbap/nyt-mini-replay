@@ -7,6 +7,7 @@ class Recorder {
     this.observer = null;
     this.gridCells = null;
     this.cellStates = null;
+    this.selectionStates = null; // Track selected/highlighted states
   }
   
   startRecording() {
@@ -51,12 +52,15 @@ class Recorder {
     
     // Store initial state of all cells
     this.cellStates = new Map();
+    this.selectionStates = new Map();
     this.gridCells.forEach((cell, index) => {
       const gridSize = this.recording.gridSize || 5; // Use recording's grid size or default to 5
       const row = Math.floor(index / gridSize);
       const col = index % gridSize;
       const currentText = this.getCellText(cell);
+      const selectionState = this.getCellSelectionState(cell);
       this.cellStates.set(`${row},${col}`, currentText);
+      this.selectionStates.set(`${row},${col}`, selectionState);
     });
     
     // Use MutationObserver to watch for changes to cell content
@@ -70,6 +74,7 @@ class Recorder {
       
       this.changeCheckTimeout = setTimeout(() => {
         this.checkForCellChanges();
+        this.checkForSelectionChanges();
       }, 100); // Check after 100ms of no changes
     });
     
@@ -84,7 +89,7 @@ class Recorder {
           subtree: true,
           characterData: true,
           attributes: true,
-          attributeFilter: ['aria-label']
+          attributeFilter: ['aria-label', 'class']
         });
       } catch (error) {
         console.error('Failed to start MutationObserver:', error);
@@ -95,7 +100,7 @@ class Recorder {
             subtree: true,
             characterData: true,
             attributes: true,
-            attributeFilter: ['aria-label']
+            attributeFilter: ['aria-label', 'class']
           });
         }
       }
@@ -134,6 +139,20 @@ class Recorder {
     }
     
     return '';
+  }
+  
+  getCellSelectionState(cell) {
+    // The selection classes are on the <rect> element inside the <g> element
+    const rectElement = cell.querySelector('rect[role="cell"]');
+    if (!rectElement) {
+      return { selected: false, highlighted: false };
+    }
+    
+    const classList = rectElement.classList;
+    return {
+      selected: classList.contains('xwd__cell--selected'),
+      highlighted: classList.contains('xwd__cell--highlighted')
+    };
   }
   
   checkForCellChanges() {
@@ -179,6 +198,68 @@ class Recorder {
     });
   }
   
+  checkForSelectionChanges() {
+    if (!this.isRecording || !this.gridCells) {
+      return;
+    }
+    
+    // Track all currently highlighted cells for batch recording
+    const currentHighlighted = [];
+    
+    this.gridCells.forEach((cell, index) => {
+      const gridSize = this.recording.gridSize || 5;
+      const row = Math.floor(index / gridSize);
+      const col = index % gridSize;
+      const key = `${row},${col}`;
+      
+      const currentState = this.getCellSelectionState(cell);
+      const previousState = this.selectionStates.get(key) || { selected: false, highlighted: false };
+      
+      // Check for selected cell changes
+      if (currentState.selected !== previousState.selected) {
+        if (currentState.selected) {
+          this.recording.addAction(ActionTypes.CELL_SELECTED, {
+            row: row,
+            col: col,
+            action: 'select'
+          });
+        } else {
+          this.recording.addAction(ActionTypes.CELL_SELECTED, {
+            row: row,
+            col: col,
+            action: 'deselect'
+          });
+        }
+      }
+      
+      // Track highlighted cells for batch processing
+      if (currentState.highlighted) {
+        currentHighlighted.push({ row, col });
+      }
+      
+      // Update stored state
+      this.selectionStates.set(key, currentState);
+    });
+    
+    // Record word highlighting changes (batch all highlighted cells together)
+    const previousHighlighted = this.previousHighlighted || [];
+    if (JSON.stringify(currentHighlighted) !== JSON.stringify(previousHighlighted)) {
+      if (currentHighlighted.length > 0) {
+        this.recording.addAction(ActionTypes.WORD_HIGHLIGHTED, {
+          cells: currentHighlighted,
+          action: 'highlight'
+        });
+      } else {
+        this.recording.addAction(ActionTypes.WORD_HIGHLIGHTED, {
+          cells: [],
+          action: 'clear'
+        });
+      }
+    }
+    
+    this.previousHighlighted = currentHighlighted;
+  }
+  
   stopRecording() {
     if (!this.isRecording) return;
     
@@ -200,6 +281,8 @@ class Recorder {
     // Clean up
     this.gridCells = null;
     this.cellStates = null;
+    this.selectionStates = null;
+    this.previousHighlighted = null;
     
     // Show toast notification
     if (window.NYTReplayToast) {

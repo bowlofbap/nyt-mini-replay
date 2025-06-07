@@ -241,6 +241,23 @@ function executeAction(action) {
     return;
   }
   
+  // Handle word highlighting action (affects multiple cells)
+  if (action.type === 'word_highlighted') {
+    // Clear all current highlights
+    gridEl.querySelectorAll('.nyt-highlighted').forEach(el => el.classList.remove('nyt-highlighted'));
+    
+    if (action.action === 'highlight' && action.cells) {
+      // Highlight the specified cells
+      action.cells.forEach(cellPos => {
+        const cell = document.getElementById(`cell-${cellPos.row}-${cellPos.col}`);
+        if (cell && !cell.classList.contains('black')) {
+          cell.classList.add('nyt-highlighted');
+        }
+      });
+    }
+    return;
+  }
+  
   const cell = document.getElementById(`cell-${action.row}-${action.col}`);
   
   if (!cell || cell.classList.contains('black')) {
@@ -251,6 +268,16 @@ function executeAction(action) {
     case 'select':
       gridEl.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
       cell.classList.add('selected');
+      break;
+      
+    case 'cell_selected':
+      if (action.action === 'select') {
+        // Clear any previously selected cell
+        gridEl.querySelectorAll('.nyt-selected').forEach(el => el.classList.remove('nyt-selected'));
+        cell.classList.add('nyt-selected');
+      } else if (action.action === 'deselect') {
+        cell.classList.remove('nyt-selected');
+      }
       break;
       
     case 'letter':
