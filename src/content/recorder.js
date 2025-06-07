@@ -40,7 +40,7 @@ class Recorder {
   attachEventListeners() {
     // Find all grid cells once
     this.gridCells = this.puzzleDetector.findGridCells();
-    if (!this.gridCells) {
+    if (!this.gridCells || this.gridCells.length === 0) {
       console.error('Cannot find grid cells for recording');
       return;
     }
@@ -70,13 +70,33 @@ class Recorder {
     
     // Observe the entire crossword container for changes
     const container = document.querySelector('.pz-moment, .xwd, .crossword') || document.body;
-    this.observer.observe(container, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true,
-      attributeFilter: ['aria-label']
-    });
+    
+    // Make sure we have a valid container before observing
+    if (container && container instanceof Node) {
+      try {
+        this.observer.observe(container, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+          attributes: true,
+          attributeFilter: ['aria-label']
+        });
+      } catch (error) {
+        console.error('Failed to start MutationObserver:', error);
+        // Fall back to document.body if specific container fails
+        if (document.body) {
+          this.observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true,
+            attributeFilter: ['aria-label']
+          });
+        }
+      }
+    } else {
+      console.error('No valid container found for MutationObserver');
+    }
   }
   
   getCellText(cell) {

@@ -263,5 +263,6 @@ async function handleFirebaseUpload(replayId, recordingData) {
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize);
 } else {
-  initialize();
+  // Add a small delay to ensure NYT's scripts have loaded
+  setTimeout(initialize, 1000);
 }
