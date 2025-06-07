@@ -7,10 +7,8 @@ const replayId = urlParams.get('id');
 let replayData = null;
 let currentActionIndex = 0;
 let isPlaying = false;
-let playbackTimer = null;
 let timerInterval = null;
-let startTime = null;
-let pausedTime = 0;
+let recordingPosition = 0; // Current position in ms in the original recording
 let playbackSpeed = 1;
 
 // Elements
@@ -171,31 +169,32 @@ function startPlayback() {
   isPlaying = true;
   playPauseBtn.textContent = 'Pause';
   
-  if (startTime === null) {
-    startTime = performance.now();
-    pausedTime = 0;
-  } else {
-    startTime = performance.now() - (pausedTime / playbackSpeed);
-  }
-  
   if (!replayData || !replayData.actions || replayData.actions.length === 0) {
     pausePlayback();
     return;
   }
   
   startContinuousTimer();
-  playNextAction();
 }
 
 function startContinuousTimer() {
-  // Update timer every 100ms for smooth display
+  // Update every 100ms for smooth display
   timerInterval = setInterval(() => {
     if (isPlaying) {
-      // Calculate current position in recording timeline
-      const realElapsed = performance.now() - startTime;
-      const recordingTimePosition = pausedTime + (realElapsed * playbackSpeed);
+      // Advance position in recording timeline based on current speed
+      recordingPosition += CONSTANTS.TIMING.TIMER_UPDATE_INTERVAL * playbackSpeed;
       
-      updateTimer(recordingTimePosition);
+      // Update timer display
+      updateTimer(recordingPosition);
+      
+      // Execute any actions that should happen at this time
+      executeActionsAtCurrentTime();
+      
+      // Check if replay is complete
+      if (currentActionIndex >= replayData.actions.length) {
+        pausePlayback();
+        playPauseBtn.textContent = 'Replay';
+      }
     }
   }, CONSTANTS.TIMING.TIMER_UPDATE_INTERVAL);
 }
@@ -204,48 +203,25 @@ function pausePlayback() {
   isPlaying = false;
   playPauseBtn.textContent = 'Play';
   
-  // Save current position in recording timeline when pausing
-  if (startTime !== null) {
-    const realElapsed = performance.now() - startTime;
-    pausedTime = pausedTime + (realElapsed * playbackSpeed);
-  }
-  
-  if (playbackTimer) {
-    clearTimeout(playbackTimer);
-    playbackTimer = null;
-  }
-  
   if (timerInterval) {
     clearInterval(timerInterval);
     timerInterval = null;
   }
 }
 
-function playNextAction() {
-  if (!isPlaying || currentActionIndex >= replayData.actions.length) {
-    // Playback complete
-    pausePlayback();
-    playPauseBtn.textContent = 'Replay';
-    return;
+function executeActionsAtCurrentTime() {
+  // Execute all actions that should happen at or before current time
+  while (currentActionIndex < replayData.actions.length) {
+    const action = replayData.actions[currentActionIndex];
+    if (action.ms <= recordingPosition) {
+      executeAction(action);
+      currentActionIndex++;
+    } else {
+      break; // No more actions to execute yet
+    }
   }
-  
-  const action = replayData.actions[currentActionIndex];
-  const actionTime = action.ms;
-  
-  // Calculate current position in recording timeline
-  const realElapsed = performance.now() - startTime;
-  const currentTimelinePosition = pausedTime + (realElapsed * playbackSpeed);
-  
-  // Calculate delay until this action should execute
-  const timeUntilAction = actionTime - currentTimelinePosition;
-  const realDelay = Math.max(0, timeUntilAction / playbackSpeed);
-  
-  playbackTimer = setTimeout(() => {
-    executeAction(action);
-    currentActionIndex++;
-    playNextAction();
-  }, realDelay);
 }
+
 
 function executeAction(action) {
   // Handle completion action (no cell needed)
@@ -361,31 +337,8 @@ function setupSpeedControls() {
       speedButtons.forEach(b => b.classList.remove('active'));
       // Add active class to clicked button
       btn.classList.add('active');
-      
-      // Handle speed change during playback
-      if (isPlaying) {
-        // Save current position in timeline before speed change
-        const realElapsed = performance.now() - startTime;
-        pausedTime = pausedTime + (realElapsed * playbackSpeed);
-        
-        // Cancel current action timeout
-        if (playbackTimer) {
-          clearTimeout(playbackTimer);
-          playbackTimer = null;
-        }
-        
-        // Set new speed
-        playbackSpeed = parseFloat(btn.dataset.speed);
-        
-        // Restart timing from current position with new speed
-        startTime = performance.now();
-        
-        // Restart action scheduling with new speed
-        playNextAction();
-      } else {
-        // Just set new speed if not playing
-        playbackSpeed = parseFloat(btn.dataset.speed);
-      }
+      // Set new speed - that's it!
+      playbackSpeed = parseFloat(btn.dataset.speed);
     });
   });
 }
