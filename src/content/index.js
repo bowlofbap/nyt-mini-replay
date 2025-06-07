@@ -227,30 +227,36 @@ async function handlePuzzleComplete() {
   if (!recordingData) return;
   
   try {
-    const response = await chrome.runtime.sendMessage({
-      action: 'UPLOAD_RECORDING',
-      data: recordingData
-    });
-    
-    if (response.success) {
-      showShareLink(response.replayId);
+    if (chrome && chrome.runtime && chrome.runtime.sendMessage) {
+      const response = await chrome.runtime.sendMessage({
+        action: 'UPLOAD_RECORDING',
+        data: recordingData
+      });
+      
+      if (response.success) {
+        showShareLink(response.replayId);
+      }
     }
   } catch (error) {
-    // Silently handle upload errors
+    console.warn('[NYT Replay] Could not upload recording:', error);
   }
 }
 
 function showShareLink(replayId) {
-  const extensionId = chrome.runtime.id;
-  const extensionUrl = `chrome-extension://${extensionId}/replay.html?id=${replayId}`;
-  const publicUrl = `https://bowlofbap.github.io/nyt-mini-replay/public-replay.html?id=${replayId}`;
-  
-  // Copy just the public URL to clipboard (cleaner for sharing)
-  navigator.clipboard.writeText(publicUrl).then(() => {
-    if (window.NYTReplayToast) {
-      window.NYTReplayToast.showShareLink(publicUrl);
-    }
-  });
+  try {
+    const extensionId = chrome && chrome.runtime ? chrome.runtime.id : 'unknown';
+    const extensionUrl = `chrome-extension://${extensionId}/replay.html?id=${replayId}`;
+    const publicUrl = `https://bowlofbap.github.io/nyt-mini-replay/public-replay.html?id=${replayId}`;
+    
+    // Copy just the public URL to clipboard (cleaner for sharing)
+    navigator.clipboard.writeText(publicUrl).then(() => {
+      if (window.NYTReplayToast) {
+        window.NYTReplayToast.showShareLink(publicUrl);
+      }
+    });
+  } catch (error) {
+    console.warn('[NYT Replay] Could not show share link:', error);
+  }
 }
 
 // Handle page unload
@@ -258,28 +264,42 @@ window.addEventListener('beforeunload', () => {
   if (recorder && recorder.isRecording) {
     const recordingData = recorder.stopRecording();
     // Try to save partial recording
-    chrome.runtime.sendMessage({
-      action: 'SAVE_PARTIAL_RECORDING',
-      data: recordingData
-    });
+    try {
+      if (chrome && chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({
+          action: 'SAVE_PARTIAL_RECORDING',
+          data: recordingData
+        });
+      }
+    } catch (error) {
+      console.warn('[NYT Replay] Could not save partial recording:', error);
+    }
   }
 });
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'STOP_RECORDING') {
-    if (recorder && recorder.isRecording) {
-      handlePuzzleComplete();
+// Only set up message listener if chrome runtime is available
+if (chrome && chrome.runtime && chrome.runtime.onMessage) {
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    try {
+      if (request.action === 'STOP_RECORDING') {
+        if (recorder && recorder.isRecording) {
+          handlePuzzleComplete();
+        }
+        sendResponse({ success: true });
+      } else if (request.action === 'UPLOAD_TO_FIREBASE') {
+        handleFirebaseUpload(request.replayId, request.data)
+          .then(() => sendResponse({ success: true }))
+          .catch(error => sendResponse({ success: false, error: error.message }));
+        return true;
+      } else {
+        sendResponse({ success: true });
+      }
+    } catch (error) {
+      console.warn('[NYT Replay] Message handler error:', error);
+      sendResponse({ success: false, error: error.message });
     }
-    sendResponse({ success: true });
-  } else if (request.action === 'UPLOAD_TO_FIREBASE') {
-    handleFirebaseUpload(request.replayId, request.data)
-      .then(() => sendResponse({ success: true }))
-      .catch(error => sendResponse({ success: false, error: error.message }));
-    return true;
-  } else {
-    sendResponse({ success: true });
-  }
-});
+  });
+}
 
 async function handleFirebaseUpload(replayId, recordingData) {
   try {

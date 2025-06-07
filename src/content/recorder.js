@@ -53,15 +53,52 @@ class Recorder {
     // Store initial state of all cells
     this.cellStates = new Map();
     this.selectionStates = new Map();
+    const initiallyHighlighted = [];
+    
     this.gridCells.forEach((cell, index) => {
       const gridSize = this.recording.gridSize || 5; // Use recording's grid size or default to 5
       const row = Math.floor(index / gridSize);
       const col = index % gridSize;
       const currentText = this.getCellText(cell);
       const selectionState = this.getCellSelectionState(cell);
+      
       this.cellStates.set(`${row},${col}`, currentText);
-      this.selectionStates.set(`${row},${col}`, selectionState);
+      this.selectionStates.set(`${row},${col}`, { selected: false, highlighted: false }); // Start with clean state
+      
+      // Record initial selections/highlights as actions
+      if (selectionState.selected) {
+        this.recording.addAction(ActionTypes.CELL_SELECTED, {
+          row: row,
+          col: col,
+          action: 'select'
+        });
+      }
+      
+      if (selectionState.highlighted) {
+        initiallyHighlighted.push({ row, col });
+      }
     });
+    
+    // Now update selection states to actual current state after recording initial actions
+    this.gridCells.forEach((cell, index) => {
+      const gridSize = this.recording.gridSize || 5;
+      const row = Math.floor(index / gridSize);
+      const col = index % gridSize;
+      const key = `${row},${col}`;
+      const currentSelectionState = this.getCellSelectionState(cell);
+      this.selectionStates.set(key, currentSelectionState);
+    });
+    
+    // Record initial word highlighting if any
+    if (initiallyHighlighted.length > 0) {
+      this.recording.addAction(ActionTypes.WORD_HIGHLIGHTED, {
+        cells: initiallyHighlighted,
+        action: 'highlight'
+      });
+      this.previousHighlighted = initiallyHighlighted;
+    } else {
+      this.previousHighlighted = [];
+    }
     
     // Use MutationObserver to watch for changes to cell content
     this.changeCheckTimeout = null;
@@ -237,7 +274,7 @@ class Recorder {
         currentHighlighted.push({ row, col });
       }
       
-      // Update stored state
+      // Update stored state to current actual state
       this.selectionStates.set(key, currentState);
     });
     
@@ -298,12 +335,18 @@ class Recorder {
   
   saveRecordingState() {
     // Save current state to chrome.storage for recovery
-    chrome.storage.local.set({
-      [CONSTANTS.STORAGE_KEYS.RECORDING_STATE]: {
-        isRecording: this.isRecording,
-        startTime: this.recording.startTime,
-        puzzleDate: this.recording.puzzleDate
+    try {
+      if (chrome && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({
+          [CONSTANTS.STORAGE_KEYS.RECORDING_STATE]: {
+            isRecording: this.isRecording,
+            startTime: this.recording.startTime,
+            puzzleDate: this.recording.puzzleDate
+          }
+        });
       }
-    });
+    } catch (error) {
+      console.warn('[NYT Replay] Could not save recording state:', error);
+    }
   }
 }
