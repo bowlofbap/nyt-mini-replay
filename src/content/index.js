@@ -40,7 +40,9 @@ function waitForPuzzle() {
   
   // Check if puzzle is already started
   setTimeout(() => {
-    if (detectTimerStart() || detectPlayButtonClick()) {
+    console.log('[NYT Replay] Checking if puzzle already started...');
+    if (detectTimerStart() || detectPlayButtonClick() || isPuzzleActive()) {
+      console.log('[NYT Replay] Puzzle is already active!');
       observer.disconnect();
       startRecordingSession();
     }
@@ -58,6 +60,7 @@ function detectTimerStart() {
   for (const selector of timerSelectors) {
     const timer = document.querySelector(selector);
     if (timer && timer.textContent && timer.textContent !== '0:00') {
+      console.log(`[NYT Replay] Timer found with value: ${timer.textContent}`);
       return true;
     }
   }
@@ -74,7 +77,7 @@ function detectPlayButtonClick() {
   
   // If we can find cells but no play modal, game has started
   const cells = puzzleDetector.findGridCells();
-  if (cells && cells.length === 25) {
+  if (cells && cells.length > 0) {
     for (const selector of playModalSelectors) {
       if (document.querySelector(selector)) {
         return false; // Play button still visible
@@ -82,6 +85,30 @@ function detectPlayButtonClick() {
     }
     return true; // Cells exist but no play button
   }
+  return false;
+}
+
+function isPuzzleActive() {
+  // Check if we can interact with puzzle cells
+  const cells = puzzleDetector.findGridCells();
+  if (!cells || cells.length === 0) return false;
+  
+  // Check if any cells have content
+  for (const cell of cells) {
+    const cellText = puzzleDetector.getCellText ? puzzleDetector.getCellText(cell) : '';
+    if (cellText && cellText.length > 0) {
+      console.log('[NYT Replay] Found active cell with content:', cellText);
+      return true;
+    }
+  }
+  
+  // Check if there's a visible timer showing non-zero time
+  const timer = document.querySelector('.xwd__timer:not([style*="display: none"])');
+  if (timer && timer.textContent && timer.textContent !== '0:00' && timer.textContent !== '') {
+    console.log('[NYT Replay] Found active timer:', timer.textContent);
+    return true;
+  }
+  
   return false;
 }
 
