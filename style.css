@@ -70,12 +70,13 @@ h1 {
   background-color: #f0f0f0;
 }
 
-.cell.nyt-selected {
-  background-color: #ffeb3b !important;
-}
-
 .cell.nyt-highlighted {
   background-color: #bbdefb !important;
+}
+
+.cell.nyt-selected,
+.cell.nyt-highlighted.nyt-selected {
+  background-color: #ffeb3b !important;
 }
 
 .cell-number {
