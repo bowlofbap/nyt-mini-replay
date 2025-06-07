@@ -11,6 +11,8 @@ let playbackTimer = null;
 let timerInterval = null;
 let startTime = null;
 let pausedTime = 0;
+let playbackSpeed = 1;
+let isDragging = false;
 
 // Elements
 const loadingEl = document.getElementById('loading');
@@ -19,6 +21,9 @@ const errorEl = document.getElementById('error');
 const gridEl = document.getElementById('crossword-grid');
 const timerEl = document.getElementById('timer');
 const playPauseBtn = document.getElementById('play-pause');
+const scrubberEl = document.getElementById('scrubber');
+const scrubberProgressEl = document.getElementById('scrubber-progress');
+const scrubberHandleEl = document.getElementById('scrubber-handle');
 
 // Initialize
 if (!replayId) {
@@ -75,6 +80,8 @@ function startReplay(data) {
   
   // Set up controls
   playPauseBtn.addEventListener('click', togglePlayback);
+  setupSpeedControls();
+  setupScrubber();
 }
 
 function buildGrid(size, blackSquares) {
@@ -230,8 +237,9 @@ function playNextAction() {
   playbackTimer = setTimeout(() => {
     executeAction(action);
     currentActionIndex++;
+    updateScrubberProgress();
     playNextAction();
-  }, Math.max(0, delay));
+  }, Math.max(0, delay / playbackSpeed));
 }
 
 function executeAction(action) {
@@ -338,4 +346,134 @@ function showCompletionMessage() {
       completion.parentNode.removeChild(completion);
     }
   }, 3000);
+}
+
+function setupSpeedControls() {
+  const speedButtons = document.querySelectorAll('.speed-btn');
+  speedButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Remove active class from all buttons
+      speedButtons.forEach(b => b.classList.remove('active'));
+      // Add active class to clicked button
+      btn.classList.add('active');
+      // Set new speed
+      playbackSpeed = parseFloat(btn.dataset.speed);
+    });
+  });
+}
+
+function setupScrubber() {
+  let isDragging = false;
+
+  scrubberEl.addEventListener('click', (e) => {
+    if (!replayData || !replayData.actions || replayData.actions.length === 0) return;
+    
+    const rect = scrubberEl.getBoundingClientRect();
+    const percentage = (e.clientX - rect.left) / rect.width;
+    seekToPercentage(percentage);
+  });
+
+  scrubberHandleEl.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging || !replayData) return;
+    
+    const rect = scrubberEl.getBoundingClientRect();
+    let percentage = (e.clientX - rect.left) / rect.width;
+    percentage = Math.max(0, Math.min(1, percentage)); // Clamp between 0 and 1
+    
+    updateScrubberPosition(percentage);
+    
+    if (!isPlaying) {
+      seekToPercentage(percentage);
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      if (isPlaying) {
+        // Resume from new position
+        const rect = scrubberEl.getBoundingClientRect();
+        const percentage = parseFloat(scrubberHandleEl.style.left) / 100;
+        seekToPercentage(percentage);
+      }
+    }
+  });
+}
+
+function seekToPercentage(percentage) {
+  if (!replayData || !replayData.actions || replayData.actions.length === 0) return;
+  
+  // Pause if playing
+  const wasPlaying = isPlaying;
+  if (isPlaying) {
+    pausePlayback();
+  }
+  
+  // Reset grid to initial state
+  resetGridToInitialState();
+  
+  // Calculate target time and action index
+  const totalTime = replayData.totalTime || (replayData.actions[replayData.actions.length - 1]?.ms || 0);
+  const targetTime = totalTime * percentage;
+  
+  // Find the action index to seek to
+  let targetIndex = 0;
+  for (let i = 0; i < replayData.actions.length; i++) {
+    if (replayData.actions[i].ms <= targetTime) {
+      targetIndex = i + 1;
+    } else {
+      break;
+    }
+  }
+  
+  // Execute all actions up to target index
+  for (let i = 0; i < targetIndex; i++) {
+    executeAction(replayData.actions[i]);
+  }
+  
+  currentActionIndex = targetIndex;
+  pausedTime = targetTime;
+  updateTimer(targetTime);
+  updateScrubberPosition(percentage);
+  
+  // Resume playing if it was playing before
+  if (wasPlaying && currentActionIndex < replayData.actions.length) {
+    startPlayback();
+  }
+}
+
+function resetGridToInitialState() {
+  // Clear all cells
+  const cells = gridEl.querySelectorAll('.cell');
+  cells.forEach(cell => {
+    if (!cell.classList.contains('black')) {
+      // Preserve cell number if it exists
+      const numberSpan = cell.querySelector('.cell-number');
+      cell.textContent = '';
+      if (numberSpan) {
+        cell.appendChild(numberSpan);
+      }
+      cell.classList.remove('filled', 'selected', 'nyt-selected', 'nyt-highlighted');
+    }
+  });
+}
+
+function updateScrubberProgress() {
+  if (!replayData || !replayData.actions || replayData.actions.length === 0) return;
+  
+  const totalTime = replayData.totalTime || (replayData.actions[replayData.actions.length - 1]?.ms || 0);
+  const currentTime = currentActionIndex > 0 ? replayData.actions[currentActionIndex - 1]?.ms || 0 : 0;
+  const percentage = totalTime > 0 ? (currentTime / totalTime) * 100 : 0;
+  
+  updateScrubberPosition(percentage);
+}
+
+function updateScrubberPosition(percentage) {
+  scrubberProgressEl.style.width = percentage + '%';
+  scrubberHandleEl.style.left = percentage + '%';
 }

@@ -21,6 +21,21 @@
       
       <div id="controls">
         <button id="play-pause">Play</button>
+        
+        <div class="speed-controls">
+          <span>Speed:</span>
+          <button class="speed-btn" data-speed="0.5">0.5x</button>
+          <button class="speed-btn active" data-speed="1">1x</button>
+          <button class="speed-btn" data-speed="2">2x</button>
+          <button class="speed-btn" data-speed="4">4x</button>
+        </div>
+        
+        <div class="scrubber-container">
+          <div class="scrubber" id="scrubber">
+            <div class="scrubber-progress" id="scrubber-progress"></div>
+            <div class="scrubber-handle" id="scrubber-handle"></div>
+          </div>
+        </div>
       </div>
     </div>
     

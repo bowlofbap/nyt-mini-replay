@@ -90,6 +90,79 @@ h1 {
 
 #controls {
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.speed-controls {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.speed-btn {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.speed-btn:hover {
+  background: #e9ecef;
+}
+
+.speed-btn.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.scrubber-container {
+  flex: 1;
+  max-width: 300px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.scrubber {
+  flex: 1;
+  height: 6px;
+  background: #dee2e6;
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+}
+
+.scrubber-progress {
+  height: 100%;
+  background: #007bff;
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.1s ease;
+}
+
+.scrubber-handle {
+  position: absolute;
+  top: -4px;
+  width: 14px;
+  height: 14px;
+  background: #007bff;
+  border-radius: 50%;
+  cursor: grab;
+  transform: translateX(-50%);
+  left: 0%;
+}
+
+.scrubber-handle:active {
+  cursor: grabbing;
 }
 
 #play-pause {

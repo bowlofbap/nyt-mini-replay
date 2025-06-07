@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NYT Mini Crossword Replay",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Record and replay your NYT crossword solving sessions. Capture every keystroke and share your solving strategy with friends!",
   "permissions": [
     "storage",
