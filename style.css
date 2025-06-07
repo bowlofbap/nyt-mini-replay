@@ -124,46 +124,6 @@ h1 {
   border-color: #007bff;
 }
 
-.scrubber-container {
-  flex: 1;
-  max-width: 300px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.scrubber {
-  flex: 1;
-  height: 6px;
-  background: #dee2e6;
-  border-radius: 3px;
-  position: relative;
-  cursor: pointer;
-}
-
-.scrubber-progress {
-  height: 100%;
-  background: #007bff;
-  border-radius: 3px;
-  width: 0%;
-  transition: width 0.1s ease;
-}
-
-.scrubber-handle {
-  position: absolute;
-  top: -4px;
-  width: 14px;
-  height: 14px;
-  background: #007bff;
-  border-radius: 50%;
-  cursor: grab;
-  transform: translateX(-50%);
-  left: 0%;
-}
-
-.scrubber-handle:active {
-  cursor: grabbing;
-}
 
 #play-pause {
   padding: 10px 20px;
