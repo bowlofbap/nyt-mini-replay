@@ -5,18 +5,25 @@ let puzzleDetector = null;
 
 // Initialize when page is ready
 function initialize() {
+  console.log('[NYT Replay] Initializing on:', window.location.href);
+  
   if (!window.location.href.includes('/crosswords/game/mini')) {
+    console.log('[NYT Replay] Not on mini crossword page, skipping');
     return;
   }
   
+  console.log('[NYT Replay] Creating puzzle detector and recorder');
   puzzleDetector = new PuzzleDetector();
   recorder = new Recorder(puzzleDetector);
   waitForPuzzle();
 }
 
 function waitForPuzzle() {
+  console.log('[NYT Replay] Waiting for puzzle to start...');
+  
   const observer = new MutationObserver((mutations) => {
     if (detectTimerStart() || detectPlayButtonClick()) {
+      console.log('[NYT Replay] Puzzle start detected!');
       observer.disconnect();
       startRecordingSession();
     }

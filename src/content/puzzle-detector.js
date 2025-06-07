@@ -60,11 +60,11 @@ class PuzzleDetector {
       }
     }
     
-    // If we can't find exactly 25, let's see what we can find
+    // If we can't find exactly 25 or 49, let's see what we can find
     for (const selector of selectors) {
       const cells = document.querySelectorAll(selector);
       if (cells.length > 0) {
-  
+        console.log(`[NYT Replay] Found ${cells.length} cells with selector: ${selector}`);
       }
     }
     
