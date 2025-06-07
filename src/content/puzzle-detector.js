@@ -1,10 +1,21 @@
 // Detects and parses NYT Mini crossword structure
 class PuzzleDetector {
   constructor() {
-    this.gridSize = CONSTANTS.MINI_GRID_SIZE;
+    this.gridSize = null; // Will be detected dynamically
   }
   
   detectPuzzleStructure() {
+    // Find all cells first to determine grid size
+    const cells = this.findGridCells();
+    if (!cells || cells.length === 0) {
+      console.error('Could not find crossword grid cells');
+      return null;
+    }
+    
+    // Determine grid size from cell count
+    this.gridSize = Math.sqrt(cells.length);
+    console.log(`Detected grid size: ${this.gridSize}x${this.gridSize}`);
+    
     const puzzleInfo = {
       gridSize: this.gridSize,
       blackSquares: [],
@@ -13,13 +24,6 @@ class PuzzleDetector {
       date: this.getPuzzleDate(),
       clues: this.getClues()
     };
-    
-    // Find all cells in the Mini grid
-    const cells = this.findGridCells();
-    if (!cells || cells.length === 0) {
-      console.error('Could not find crossword grid cells');
-      return null;
-    }
     
     // Get cell numbers
     puzzleInfo.cellNumbers = this.getCellNumbers(cells);
@@ -49,8 +53,9 @@ class PuzzleDetector {
     for (const selector of selectors) {
       const cells = document.querySelectorAll(selector);
       
-      if (cells.length === 25) {  // 5x5 grid
-        
+      // Support both 5x5 (Mini) and 7x7 puzzles
+      if (cells.length === 25 || cells.length === 49) {  // 5x5 or 7x7 grid
+        console.log(`Found ${cells.length} cells (${Math.sqrt(cells.length)}x${Math.sqrt(cells.length)} grid)`);
         return Array.from(cells);
       }
     }
@@ -198,8 +203,8 @@ class PuzzleDetector {
     const cellNumbers = [];
     
     cells.forEach((cell, index) => {
-      const row = Math.floor(index / 5);
-      const col = index % 5;
+      const row = Math.floor(index / this.gridSize);
+      const col = index % this.gridSize;
       
       // Look for number text within the cell
       let number = null;

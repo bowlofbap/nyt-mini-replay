@@ -48,8 +48,9 @@ class Recorder {
     // Store initial state of all cells
     this.cellStates = new Map();
     this.gridCells.forEach((cell, index) => {
-      const row = Math.floor(index / 5);
-      const col = index % 5;
+      const gridSize = this.recording.gridSize || 5; // Use recording's grid size or default to 5
+      const row = Math.floor(index / gridSize);
+      const col = index % gridSize;
       const currentText = this.getCellText(cell);
       this.cellStates.set(`${row},${col}`, currentText);
     });
@@ -137,8 +138,9 @@ class Recorder {
     }
     
     this.gridCells.forEach((cell, index) => {
-      const row = Math.floor(index / 5);
-      const col = index % 5;
+      const gridSize = this.recording.gridSize || 5; // Use recording's grid size or default to 5
+      const row = Math.floor(index / gridSize);
+      const col = index % gridSize;
       const key = `${row},${col}`;
       const currentText = this.getCellText(cell);
       const previousText = this.cellStates.get(key) || '';
