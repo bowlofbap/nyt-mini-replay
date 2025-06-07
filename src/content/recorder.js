@@ -18,11 +18,8 @@ class Recorder {
     
     const puzzleInfo = this.puzzleDetector.detectPuzzleStructure();
     if (!puzzleInfo) {
-      console.error('[NYT Replay] Could not detect puzzle structure');
       return false;
     }
-    
-    console.log('[NYT Replay] Recording with grid size:', puzzleInfo.gridSize);
     
     this.recording.gridSize = puzzleInfo.gridSize;
     this.recording.blackSquares = puzzleInfo.blackSquares;
@@ -46,7 +43,6 @@ class Recorder {
     // Find all grid cells once
     this.gridCells = this.puzzleDetector.findGridCells();
     if (!this.gridCells || this.gridCells.length === 0) {
-      console.error('Cannot find grid cells for recording');
       return;
     }
     

@@ -64,16 +64,12 @@ async function loadRecentRecordings() {
     Object.keys(items).forEach(key => {
       if (key.startsWith('recording_')) {
         const id = key.replace('recording_', '');
-        console.log('Found recording:', id, items[key]);
         recordings.push({
           id: id,
           data: items[key]
         });
       }
     });
-    
-    console.log('Total recordings found:', recordings.length);
-    console.log('All storage items:', Object.keys(items));
     
     if (recordings.length === 0) {
       return;

@@ -14,7 +14,6 @@ class PuzzleDetector {
     
     // Determine grid size from cell count
     this.gridSize = Math.sqrt(cells.length);
-    console.log(`Detected grid size: ${this.gridSize}x${this.gridSize} (${cells.length} total cells)`);
     
     const puzzleInfo = {
       gridSize: this.gridSize,
@@ -63,8 +62,6 @@ class PuzzleDetector {
         if (Number.isInteger(possibleGridSize)) {
           // Validate grid size is within reasonable bounds
           if (possibleGridSize >= CONSTANTS.GRID.MIN_SIZE && possibleGridSize <= CONSTANTS.GRID.MAX_SIZE) {
-            console.log(`Found ${cellCount} cells (${possibleGridSize}x${possibleGridSize} grid) with selector: ${selector}`);
-            
             // Score based on how well it matches expected patterns
             let score = cellCount;
             
@@ -87,14 +84,11 @@ class PuzzleDetector {
               };
             }
           }
-        } else {
-          console.log(`[NYT Replay] Found ${cellCount} cells with selector: ${selector} (not a perfect square grid)`);
         }
       }
     }
     
     if (bestMatch) {
-      console.log(`[NYT Replay] Selected best match: ${bestMatch.gridSize}x${bestMatch.gridSize} grid with selector: ${bestMatch.selector}`);
       this.gridSize = bestMatch.gridSize;
       return bestMatch.cells;
     }
@@ -104,9 +98,7 @@ class PuzzleDetector {
     containerSelectors.forEach(selector => {
       const container = document.querySelector(selector);
       if (container) {
-        console.log(`[NYT Replay] Found potential container: ${selector}`);
-        const cells = container.querySelectorAll('*');
-        console.log(`[NYT Replay] Container has ${cells.length} child elements`);
+        // Container found but no valid grid detected
       }
     });
     

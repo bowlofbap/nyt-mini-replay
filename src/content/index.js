@@ -1,31 +1,22 @@
 // Main content script entry point
-console.log('[NYT Replay] Content script loaded on:', window.location.href);
-
 let recorder = null;
 let puzzleDetector = null;
 
 // Initialize when page is ready
 function initialize() {
-  console.log('[NYT Replay] Initializing on:', window.location.href);
-  
   // Support both mini and other crossword types
   if (!window.location.href.includes('/crosswords/game/')) {
-    console.log('[NYT Replay] Not on crossword page, skipping');
     return;
   }
   
-  console.log('[NYT Replay] Creating puzzle detector and recorder');
   puzzleDetector = new PuzzleDetector();
   recorder = new Recorder(puzzleDetector);
   waitForPuzzle();
 }
 
 function waitForPuzzle() {
-  console.log('[NYT Replay] Waiting for puzzle to start...');
-  
   const observer = new MutationObserver((mutations) => {
     if (detectTimerStart() || detectPlayButtonClick()) {
-      console.log('[NYT Replay] Puzzle start detected!');
       observer.disconnect();
       startRecordingSession();
     }
@@ -40,9 +31,7 @@ function waitForPuzzle() {
   
   // Check if puzzle is already started
   setTimeout(() => {
-    console.log('[NYT Replay] Checking if puzzle already started...');
     if (detectTimerStart() || detectPlayButtonClick() || isPuzzleActive()) {
-      console.log('[NYT Replay] Puzzle is already active!');
       observer.disconnect();
       startRecordingSession();
     }
@@ -60,7 +49,6 @@ function detectTimerStart() {
   for (const selector of timerSelectors) {
     const timer = document.querySelector(selector);
     if (timer && timer.textContent && timer.textContent !== '0:00') {
-      console.log(`[NYT Replay] Timer found with value: ${timer.textContent}`);
       return true;
     }
   }
@@ -97,7 +85,6 @@ function isPuzzleActive() {
   for (const cell of cells) {
     const cellText = puzzleDetector.getCellText ? puzzleDetector.getCellText(cell) : '';
     if (cellText && cellText.length > 0) {
-      console.log('[NYT Replay] Found active cell with content:', cellText);
       return true;
     }
   }
@@ -105,7 +92,6 @@ function isPuzzleActive() {
   // Check if there's a visible timer showing non-zero time
   const timer = document.querySelector('.xwd__timer:not([style*="display: none"])');
   if (timer && timer.textContent && timer.textContent !== '0:00' && timer.textContent !== '') {
-    console.log('[NYT Replay] Found active timer:', timer.textContent);
     return true;
   }
   
@@ -126,21 +112,18 @@ function isPuzzleCompleted() {
   // Method 1: Look for the exact congratulations modal from NYT Mini
   const congratsModal = document.querySelector('.xwd__congrats-modal, .mini__congrats-modal');
   if (congratsModal && congratsModal.offsetParent !== null) {
-    console.log('Found NYT Mini congratulations modal');
     return true;
   }
   
   // Method 2: Check for "Congratulations!" text specifically
   const congratsText = document.querySelector('h1.pz-moment__title, h1');
   if (congratsText && congratsText.textContent && congratsText.textContent.includes('Congratulations!')) {
-    console.log('Found "Congratulations!" heading');
     return true;
   }
   
   // Method 3: Check for "You solved The Mini" text
   const bodyText = document.body.textContent || document.body.innerText;
   if (bodyText.includes('You solved The Mini') || bodyText.includes('Congratulations!')) {
-    console.log('Found completion text in body');
     return true;
   }
   
@@ -150,7 +133,6 @@ function isPuzzleCompleted() {
     if (modal && modal.offsetParent !== null) {
       const modalText = modal.textContent || modal.innerText;
       if (modalText && (modalText.includes('Congratulations') || modalText.includes('You solved'))) {
-        console.log('Found congratulations in modal');
         return true;
       }
     }
@@ -161,7 +143,6 @@ function isPuzzleCompleted() {
   if (cells && cells.length > 0) {
     const expectedCellCount = puzzleDetector.gridSize * puzzleDetector.gridSize;
     if (cells.length !== expectedCellCount) {
-      console.log(`Cell count mismatch: found ${cells.length}, expected ${expectedCellCount}`);
       return false;
     }
     
@@ -175,7 +156,6 @@ function isPuzzleCompleted() {
     
     // If all cells are filled without errors, likely completed
     if (filledCount === expectedCellCount) {
-      console.log(`All ${filledCount} cells filled correctly - puzzle likely complete`);
       return true;
     }
   }
@@ -208,7 +188,6 @@ function monitorPuzzleCompletion() {
     // Also check every few seconds as backup
     const backupCheck = setInterval(() => {
       if (isPuzzleCompleted()) {
-        console.log('Puzzle completed! (backup check)');
         clearInterval(backupCheck);
         handlePuzzleComplete();
         observer.disconnect();
@@ -322,13 +301,9 @@ async function handleFirebaseUpload(replayId, recordingData) {
 }
 
 // Initialize when DOM is ready
-console.log('[NYT Replay] Document ready state:', document.readyState);
-
 if (document.readyState === 'loading') {
-  console.log('[NYT Replay] Waiting for DOMContentLoaded...');
   document.addEventListener('DOMContentLoaded', initialize);
 } else {
-  console.log('[NYT Replay] DOM already loaded, initializing in 1 second...');
   // Add a small delay to ensure NYT's scripts have loaded
   setTimeout(initialize, 1000);
 }
