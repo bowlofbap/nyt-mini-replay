@@ -1,4 +1,5 @@
 // Main content script entry point
+console.log('[NYT Replay] Content script loaded on:', window.location.href);
 
 let recorder = null;
 let puzzleDetector = null;
@@ -7,8 +8,9 @@ let puzzleDetector = null;
 function initialize() {
   console.log('[NYT Replay] Initializing on:', window.location.href);
   
-  if (!window.location.href.includes('/crosswords/game/mini')) {
-    console.log('[NYT Replay] Not on mini crossword page, skipping');
+  // Support both mini and other crossword types
+  if (!window.location.href.includes('/crosswords/game/')) {
+    console.log('[NYT Replay] Not on crossword page, skipping');
     return;
   }
   
