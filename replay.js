@@ -12,8 +12,6 @@ let timerInterval = null;
 let startTime = null;
 let pausedTime = 0;
 let playbackSpeed = 1;
-let currentTimerValue = 0; // Current timer value in ms
-let lastTimerUpdate = null; // When we last updated the timer
 
 // Elements
 const loadingEl = document.getElementById('loading');
@@ -232,15 +230,21 @@ function playNextAction() {
   }
   
   const action = replayData.actions[currentActionIndex];
-  const nextTime = action.ms;
-  const currentTime = currentActionIndex === 0 ? 0 : replayData.actions[currentActionIndex - 1].ms;
-  const delay = nextTime - currentTime;
+  const actionTime = action.ms;
+  
+  // Calculate current position in recording timeline
+  const realElapsed = performance.now() - startTime;
+  const currentTimelinePosition = pausedTime + (realElapsed * playbackSpeed);
+  
+  // Calculate delay until this action should execute
+  const timeUntilAction = actionTime - currentTimelinePosition;
+  const realDelay = Math.max(0, timeUntilAction / playbackSpeed);
   
   playbackTimer = setTimeout(() => {
     executeAction(action);
     currentActionIndex++;
     playNextAction();
-  }, Math.max(0, delay / playbackSpeed));
+  }, realDelay);
 }
 
 function executeAction(action) {
@@ -357,11 +361,30 @@ function setupSpeedControls() {
       speedButtons.forEach(b => b.classList.remove('active'));
       // Add active class to clicked button
       btn.classList.add('active');
-      // Set new speed
-      playbackSpeed = parseFloat(btn.dataset.speed);
-      // Reset timer update tracking for smooth speed transitions
-      if (isPlaying && lastTimerUpdate !== null) {
-        lastTimerUpdate = performance.now();
+      
+      // Handle speed change during playback
+      if (isPlaying) {
+        // Save current position in timeline before speed change
+        const realElapsed = performance.now() - startTime;
+        pausedTime = pausedTime + (realElapsed * playbackSpeed);
+        
+        // Cancel current action timeout
+        if (playbackTimer) {
+          clearTimeout(playbackTimer);
+          playbackTimer = null;
+        }
+        
+        // Set new speed
+        playbackSpeed = parseFloat(btn.dataset.speed);
+        
+        // Restart timing from current position with new speed
+        startTime = performance.now();
+        
+        // Restart action scheduling with new speed
+        playNextAction();
+      } else {
+        // Just set new speed if not playing
+        playbackSpeed = parseFloat(btn.dataset.speed);
       }
     });
   });
