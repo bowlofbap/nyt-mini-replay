@@ -311,7 +311,7 @@
         <div class="install-prompt">
             <p><strong>Don't have the extension?</strong></p>
             <p>Install the NYT Mini Crossword Replay extension to create your own replays!</p>
-            <a href="https://github.com/bowlofbap/nyt-mini-replay" class="install-link" target="_blank">
+            <a id="install-link" href="https://github.com/bowlofbap/nyt-mini-replay" class="install-link" target="_blank">
                 Get Extension
             </a>
         </div>
@@ -793,6 +793,27 @@
                 });
             });
         }
+
+        // Update install link to Chrome Web Store if available
+        function updateInstallLink() {
+            const installLink = document.getElementById('install-link');
+            const installPrompt = document.querySelector('.install-prompt');
+            
+            // Chrome Web Store URL - update this after submission
+            const chromeStoreUrl = null; // Will be: 'https://chrome.google.com/webstore/detail/nyt-crossword-replay/[extension-id]'
+            
+            if (chromeStoreUrl) {
+                installLink.href = chromeStoreUrl;
+                installLink.textContent = 'Install from Chrome Web Store';
+                installPrompt.style.display = 'block';
+            } else {
+                // Hide install prompt until Chrome Web Store link is available
+                installPrompt.style.display = 'none';
+            }
+        }
+
+        // Initialize install link
+        updateInstallLink();
 
     </script>
 </body>
