@@ -436,18 +436,24 @@
                 blackSquares = inferBlackSquares();
             }
             
-            // Mini is always 5x5
-            gridEl.style.gridTemplateColumns = `repeat(5, 1fr)`;
-            gridEl.style.gridTemplateRows = `repeat(5, 1fr)`;
-            gridEl.style.width = '260px'; // 50px * 5 + 2px gaps * 4 + 4px border
-            gridEl.style.height = '260px';
+            // Use the size from recording data, default to 5 if not specified
+            const gridSize = size || 5;
+            const cellSize = 50; // pixels per cell
+            const gap = 2; // gap between cells
+            const border = 4; // border around grid
+            const totalSize = (cellSize * gridSize) + (gap * (gridSize - 1)) + border;
+            
+            gridEl.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+            gridEl.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
+            gridEl.style.width = `${totalSize}px`;
+            gridEl.style.height = `${totalSize}px`;
             
             // Clear existing grid
             gridEl.innerHTML = '';
             
             // Create all cells
-            for (let row = 0; row < 5; row++) {
-                for (let col = 0; col < 5; col++) {
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
                     const cell = document.createElement('div');
                     cell.className = 'cell';
                     cell.dataset.row = row;
@@ -479,6 +485,8 @@
         function inferBlackSquares() {
             if (!replayData || !replayData.actions) return [];
             
+            const gridSize = replayData.gridSize || 5;
+            
             // Track which cells ever received letters
             const cellsWithLetters = new Set();
             
@@ -491,8 +499,8 @@
             
             // Any cell that never received a letter is likely a black square
             const blackSquares = [];
-            for (let row = 0; row < 5; row++) {
-                for (let col = 0; col < 5; col++) {
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
                     const key = `${row},${col}`;
                     if (!cellsWithLetters.has(key)) {
                         blackSquares.push([row, col]);
