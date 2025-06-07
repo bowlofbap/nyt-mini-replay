@@ -190,14 +190,11 @@ function startPlayback() {
 function startContinuousTimer() {
   // Update timer every 100ms for smooth display
   timerInterval = setInterval(() => {
-    if (isPlaying && currentActionIndex < replayData.actions.length) {
-      // Show time based on current action being executed
-      const currentActionTime = replayData.actions[currentActionIndex].ms || 0;
-      updateTimer(currentActionTime);
-    } else if (isPlaying && currentActionIndex >= replayData.actions.length) {
-      // Show final time when replay is complete
-      const finalTime = replayData.totalTime || (replayData.actions.length > 0 ? replayData.actions[replayData.actions.length - 1].ms : 0);
-      updateTimer(finalTime);
+    if (isPlaying) {
+      const realElapsedTime = performance.now() - startTime;
+      const scaledElapsedTime = realElapsedTime * playbackSpeed;
+      const currentReplayTime = pausedTime + scaledElapsedTime;
+      updateTimer(currentReplayTime);
     }
   }, CONSTANTS.TIMING.TIMER_UPDATE_INTERVAL);
 }
