@@ -18,6 +18,7 @@ const errorEl = document.getElementById('error');
 const gridEl = document.getElementById('crossword-grid');
 const timerEl = document.getElementById('timer');
 const playPauseBtn = document.getElementById('play-pause');
+const scrubberEl = document.getElementById('scrubber');
 
 // Initialize
 if (!replayId) {
@@ -72,9 +73,15 @@ function startReplay(data) {
   // Build grid
   buildGrid(data.gridSize, data.blackSquares);
   
+  // Set up scrubber
+  const totalTime = data.totalTime || (data.actions.length > 0 ? data.actions[data.actions.length - 1].ms : 0);
+  scrubberEl.max = totalTime;
+  scrubberEl.value = 0;
+  
   // Set up controls
   playPauseBtn.addEventListener('click', togglePlayback);
   setupSpeedControls();
+  setupScrubber();
 }
 
 function buildGrid(size, blackSquares) {
@@ -186,6 +193,11 @@ function startContinuousTimer() {
       
       // Update timer display
       updateTimer(recordingPosition);
+      
+      // Update scrubber position
+      if (!scrubberEl.isDragging) {
+        scrubberEl.value = recordingPosition;
+      }
       
       // Execute any actions that should happen at this time
       executeActionsAtCurrentTime();
@@ -341,5 +353,85 @@ function setupSpeedControls() {
       playbackSpeed = parseFloat(btn.dataset.speed);
     });
   });
+}
+
+function setupScrubber() {
+  let scrubTimeout = null;
+  
+  // Handle scrubber drag start
+  scrubberEl.addEventListener('mousedown', () => {
+    scrubberEl.isDragging = true;
+  });
+  
+  // Handle scrubber drag end
+  document.addEventListener('mouseup', () => {
+    if (scrubberEl.isDragging) {
+      scrubberEl.isDragging = false;
+      // Perform final scrub when user releases
+      scrubToPosition(parseInt(scrubberEl.value));
+    }
+  });
+  
+  // Handle scrubber input (while dragging)
+  scrubberEl.addEventListener('input', (e) => {
+    const newPosition = parseInt(e.target.value);
+    updateTimer(newPosition); // Update timer immediately for responsiveness
+    
+    // Throttle actual scrubbing for performance
+    if (scrubTimeout) clearTimeout(scrubTimeout);
+    scrubTimeout = setTimeout(() => {
+      scrubToPosition(newPosition);
+    }, 50);
+  });
+  
+  // Handle direct clicks on scrubber track
+  scrubberEl.addEventListener('change', (e) => {
+    if (!scrubberEl.isDragging) {
+      scrubToPosition(parseInt(e.target.value));
+    }
+  });
+}
+
+function scrubToPosition(newPosition) {
+  // Remember if we were playing
+  const wasPlaying = isPlaying;
+  if (isPlaying) pausePlayback();
+  
+  // Set new position
+  recordingPosition = newPosition;
+  currentActionIndex = 0;
+  
+  // Clear all cells
+  gridEl.querySelectorAll('.cell').forEach(cell => {
+    if (!cell.classList.contains('black')) {
+      // Preserve cell number if exists
+      const numberSpan = cell.querySelector('.cell-number');
+      cell.textContent = '';
+      if (numberSpan) {
+        cell.appendChild(numberSpan);
+      }
+      cell.classList.remove('filled', 'selected', 'nyt-selected', 'nyt-highlighted');
+    }
+  });
+  
+  // Fast-execute all actions up to this point
+  while (currentActionIndex < replayData.actions.length) {
+    const action = replayData.actions[currentActionIndex];
+    if (action.ms <= recordingPosition) {
+      executeAction(action);
+      currentActionIndex++;
+    } else {
+      break;
+    }
+  }
+  
+  // Update display
+  updateTimer(recordingPosition);
+  scrubberEl.value = recordingPosition;
+  
+  // Resume if we were playing
+  if (wasPlaying) {
+    startPlayback();
+  }
 }
 

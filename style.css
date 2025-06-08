@@ -124,6 +124,60 @@ h1 {
   border-color: #007bff;
 }
 
+.scrubber-container {
+  margin: 15px 0;
+  padding: 0 10px;
+}
+
+#scrubber {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #ddd;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+#scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #007bff;
+  border-radius: 50%;
+  cursor: grab;
+  transition: transform 0.1s ease;
+}
+
+#scrubber::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+#scrubber::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
+
+#scrubber::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #007bff;
+  border-radius: 50%;
+  cursor: grab;
+  border: none;
+  transition: transform 0.1s ease;
+}
+
+#scrubber::-moz-range-thumb:hover {
+  transform: scale(1.2);
+}
+
+#scrubber::-moz-range-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
 
 #play-pause {
   padding: 10px 20px;

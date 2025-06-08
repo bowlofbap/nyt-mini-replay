@@ -99,6 +99,60 @@
             border-color: #007bff;
         }
         
+        .scrubber-container {
+            margin: 20px 0;
+            padding: 0 20px;
+        }
+        
+        #scrubber {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #ddd;
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        #scrubber::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #007bff;
+            border-radius: 50%;
+            cursor: grab;
+            transition: transform 0.1s ease;
+        }
+        
+        #scrubber::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        #scrubber::-webkit-slider-thumb:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+        
+        #scrubber::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: #007bff;
+            border-radius: 50%;
+            cursor: grab;
+            border: none;
+            transition: transform 0.1s ease;
+        }
+        
+        #scrubber::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        #scrubber::-moz-range-thumb:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
 
         #timer {
             font-family: 'Courier New', monospace;
@@ -294,6 +348,10 @@
                 
             </div>
             
+            <div class="scrubber-container">
+                <input type="range" id="scrubber" min="0" max="0" value="0" />
+            </div>
+            
             <div class="puzzle-content">
                 <div id="crossword-grid"></div>
                 
@@ -415,6 +473,7 @@
         const gridEl = document.getElementById('crossword-grid');
         const timerEl = document.getElementById('timer');
         const playPauseBtn = document.getElementById('play-pause');
+        const scrubberEl = document.getElementById('scrubber');
 
         // Initialize Firebase manager
         const firebaseManager = new FirebaseRESTManager();
@@ -461,9 +520,15 @@
                 buildClues(data.clues);
             }
             
+            // Set up scrubber
+            const totalTime = data.totalTime || (data.actions.length > 0 ? data.actions[data.actions.length - 1].ms : 0);
+            scrubberEl.max = totalTime;
+            scrubberEl.value = 0;
+            
             // Set up controls
             playPauseBtn.addEventListener('click', togglePlayback);
             setupSpeedControls();
+            setupScrubber();
         }
 
         function buildGrid(size, blackSquares) {
@@ -627,6 +692,11 @@
                     // Update timer display
                     updateTimer(recordingPosition);
                     
+                    // Update scrubber position
+                    if (!scrubberEl.isDragging) {
+                        scrubberEl.value = recordingPosition;
+                    }
+                    
                     // Execute any actions that should happen at this time
                     executeActionsAtCurrentTime();
                     
@@ -781,6 +851,86 @@
                     playbackSpeed = parseFloat(btn.dataset.speed);
                 });
             });
+        }
+
+        function setupScrubber() {
+            let scrubTimeout = null;
+            
+            // Handle scrubber drag start
+            scrubberEl.addEventListener('mousedown', () => {
+                scrubberEl.isDragging = true;
+            });
+            
+            // Handle scrubber drag end
+            document.addEventListener('mouseup', () => {
+                if (scrubberEl.isDragging) {
+                    scrubberEl.isDragging = false;
+                    // Perform final scrub when user releases
+                    scrubToPosition(parseInt(scrubberEl.value));
+                }
+            });
+            
+            // Handle scrubber input (while dragging)
+            scrubberEl.addEventListener('input', (e) => {
+                const newPosition = parseInt(e.target.value);
+                updateTimer(newPosition); // Update timer immediately for responsiveness
+                
+                // Throttle actual scrubbing for performance
+                if (scrubTimeout) clearTimeout(scrubTimeout);
+                scrubTimeout = setTimeout(() => {
+                    scrubToPosition(newPosition);
+                }, 50);
+            });
+            
+            // Handle direct clicks on scrubber track
+            scrubberEl.addEventListener('change', (e) => {
+                if (!scrubberEl.isDragging) {
+                    scrubToPosition(parseInt(e.target.value));
+                }
+            });
+        }
+        
+        function scrubToPosition(newPosition) {
+            // Remember if we were playing
+            const wasPlaying = isPlaying;
+            if (isPlaying) pausePlayback();
+            
+            // Set new position
+            recordingPosition = newPosition;
+            currentActionIndex = 0;
+            
+            // Clear all cells
+            gridEl.querySelectorAll('.cell').forEach(cell => {
+                if (!cell.classList.contains('black')) {
+                    // Preserve cell number if exists
+                    const numberSpan = cell.querySelector('.cell-number');
+                    cell.textContent = '';
+                    if (numberSpan) {
+                        cell.appendChild(numberSpan);
+                    }
+                    cell.classList.remove('filled', 'selected', 'nyt-selected', 'nyt-highlighted');
+                }
+            });
+            
+            // Fast-execute all actions up to this point
+            while (currentActionIndex < replayData.actions.length) {
+                const action = replayData.actions[currentActionIndex];
+                if (action.ms <= recordingPosition) {
+                    executeAction(action);
+                    currentActionIndex++;
+                } else {
+                    break;
+                }
+            }
+            
+            // Update display
+            updateTimer(recordingPosition);
+            scrubberEl.value = recordingPosition;
+            
+            // Resume if we were playing
+            if (wasPlaying) {
+                startPlayback();
+            }
         }
 
         // Update install link to Chrome Web Store if available
