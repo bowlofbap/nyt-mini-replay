@@ -703,7 +703,7 @@
                     // Check if replay is complete
                     if (currentActionIndex >= replayData.actions.length) {
                         pausePlayback();
-                        playPauseBtn.style.display = 'none';
+                        hideControls();
                     }
                 }
             }, 100);
@@ -837,6 +837,11 @@
                     completion.parentNode.removeChild(completion);
                 }
             }, 3000);
+        }
+
+        function hideControls() {
+            document.querySelector('.controls').style.display = 'none';
+            document.querySelector('.scrubber-container').style.display = 'none';
         }
 
         function setupSpeedControls() {

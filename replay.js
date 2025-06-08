@@ -205,7 +205,7 @@ function startContinuousTimer() {
       // Check if replay is complete
       if (currentActionIndex >= replayData.actions.length) {
         pausePlayback();
-        playPauseBtn.textContent = 'Replay';
+        hideControls();
       }
     }
   }, CONSTANTS.TIMING.TIMER_UPDATE_INTERVAL);
@@ -339,6 +339,11 @@ function showCompletionMessage() {
       completion.parentNode.removeChild(completion);
     }
   }, CONSTANTS.TIMING.COMPLETION_MESSAGE_DURATION);
+}
+
+function hideControls() {
+  document.getElementById('controls').style.display = 'none';
+  document.querySelector('.scrubber-container').style.display = 'none';
 }
 
 function setupSpeedControls() {
